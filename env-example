@@ -1,0 +1,15 @@
+PORT = 5000
+
+DB_HOST = localhost
+DB_PORT = 5432
+DB_USER = postgres
+DB_PASSWORD = password
+DB_NAME = test
+
+ORIGIN = http://localhost:3000
+
+access_token_private = 
+access_token_public = 
+
+refresh_token_private = 
+refresh_token_public = 
