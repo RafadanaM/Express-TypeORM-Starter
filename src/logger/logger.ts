@@ -19,7 +19,6 @@ const logger = pino({
     req: () => {},
     res: () => {},
   },
-  //   redact: ['req', 'res', 'reqId'],
   transport: {
     target: 'pino-pretty',
     options: {

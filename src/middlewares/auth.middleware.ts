@@ -4,10 +4,10 @@ import MissingTokenException from '../exceptions/missingToken.exception';
 import { verifyAccessToken } from '../utils/token.util';
 
 interface AuthResponseLocals {
-  user: string;
+  user_email: string;
 }
 
-async function authMiddleware(request: Request, response: Response<{}, AuthResponseLocals>, next: NextFunction) {
+const authMiddleware = async (request: Request, response: Response<{}, AuthResponseLocals>, next: NextFunction) => {
   const authHeader = request.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) return next(new MissingTokenException());
@@ -15,7 +15,7 @@ async function authMiddleware(request: Request, response: Response<{}, AuthRespo
   const verificationResponse = verifyAccessToken(token);
   if (verificationResponse === null) return next(new invalidTokenException());
   //   https://stackoverflow.com/a/65144765
-  response.locals.user = verificationResponse.email;
+  response.locals.user_email = verificationResponse.email;
   next();
-}
+};
 export default authMiddleware;
