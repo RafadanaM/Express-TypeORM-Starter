@@ -4,7 +4,7 @@ import authMiddleware from '../../middlewares/auth.middleware';
 import UsersService from './users.service';
 
 class UsersController implements Controller {
-  public path: string = '/users';
+  public path = '/users';
   public router: Router = Router();
   private usersService: UsersService;
 

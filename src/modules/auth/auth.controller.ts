@@ -27,7 +27,11 @@ class AuthController implements Controller {
     this.router.post('/register', validationMiddleware(registerDTO, RequestTypes.BODY), this.register);
   }
 
-  private register = async (req: Request<{}, {}, registerDTO>, res: Response, next: NextFunction) => {
+  private register = async (
+    req: Request<Record<string, never>, Record<string, never>, registerDTO>,
+    res: Response,
+    next: NextFunction,
+  ) => {
     try {
       const body = req.body;
       const response = await this.authService.register(body);
@@ -37,7 +41,11 @@ class AuthController implements Controller {
     }
   };
 
-  private login = async (req: Request<{}, {}, loginDTO>, res: Response, next: NextFunction) => {
+  private login = async (
+    req: Request<Record<string, never>, Record<string, never>, loginDTO>,
+    res: Response,
+    next: NextFunction,
+  ) => {
     try {
       const body = req.body;
       const oldRefreshToken: string | undefined = req.cookies[Cookies.RefreshToken];

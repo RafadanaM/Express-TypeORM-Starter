@@ -6,28 +6,28 @@ class Users {
   public id?: number;
 
   @Column()
-  public first_name: string;
+  public first_name!: string;
 
   @Column()
-  public last_name: string;
+  public last_name!: string;
 
   @Column({ unique: true })
-  public email: string;
+  public email!: string;
 
   @Column({ select: false })
   public password?: string;
 
   @Column()
-  public birth_date: Date;
+  public birth_date!: Date;
 
   @Column('text', { array: true, default: () => 'array[]::text[]' })
-  public refresh_tokens: string[];
+  public refresh_tokens!: string[];
 
   @CreateDateColumn()
-  public created: Date;
+  public created!: Date;
 
   @UpdateDateColumn()
-  public updated: Date;
+  public updated!: Date;
 }
 
 export default Users;

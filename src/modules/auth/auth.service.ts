@@ -1,4 +1,4 @@
-import { Repository } from 'typeorm';
+import { QueryFailedError, Repository } from 'typeorm';
 import AppDataSource from '../../data-source';
 import EmailAlreadyExist from '../../exceptions/emailAlreadyExist.exception';
 import HttpException from '../../exceptions/http.exception';
@@ -9,6 +9,7 @@ import EmailPasswordDoesNotMatch from '../../exceptions/emailPasswordDoesNotMatc
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../../utils/token.util';
 import MissingTokenException from '../../exceptions/missingToken.exception';
 import invalidTokenException from '../../exceptions/InvalidToken.exception';
+import { isQueryFailedError } from '../../utils/db.util';
 
 class AuthService {
   private userRepository: Repository<Users>;
@@ -24,8 +25,10 @@ class AuthService {
       await this.userRepository.save(newUser);
       return newUser;
     } catch (error) {
-      if (error.code === '23505') {
-        throw new EmailAlreadyExist();
+      if (isQueryFailedError(error)) {
+        if (error.code === '23505') {
+          throw new EmailAlreadyExist();
+        }
       }
       throw new HttpException(500, 'Something went wrong');
     }
