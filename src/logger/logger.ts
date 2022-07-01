@@ -14,7 +14,12 @@ const logger = pino({
   customLevels: levels,
   useOnlyCustomLevels: true,
   level: 'http',
-//   redact: ['req', 'res', 'reqId'],
+  serializers: {
+    err: pino.stdSerializers.err,
+    req: () => {},
+    res: () => {},
+  },
+  //   redact: ['req', 'res', 'reqId'],
   transport: {
     target: 'pino-pretty',
     options: {
@@ -24,5 +29,5 @@ const logger = pino({
       ignore: 'hostname,pid',
     },
   },
-})
+});
 export default logger;
