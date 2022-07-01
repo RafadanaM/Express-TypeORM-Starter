@@ -15,9 +15,9 @@ const logger = pino({
   useOnlyCustomLevels: true,
   level: 'http',
   serializers: {
-    err: pino.stdSerializers.err,
-    req: () => {},
-    res: () => {},
+    err: () => undefined,
+    req: () => undefined,
+    res: () => undefined,
   },
   transport: {
     target: 'pino-pretty',
