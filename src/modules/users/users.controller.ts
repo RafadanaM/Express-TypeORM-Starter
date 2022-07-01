@@ -14,7 +14,7 @@ class UsersController implements Controller {
   }
 
   private initRoutes() {
-    this.router.get('', authMiddleware, this.getUsers);
+    this.router.get('', authMiddleware, this.getUsers);_
   }
 
   private getUsers = async (req: Request, res: Response, next: NextFunction): Promise<void> => {

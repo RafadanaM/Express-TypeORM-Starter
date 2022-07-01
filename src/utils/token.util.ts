@@ -11,9 +11,9 @@ export const refreshCookieOption: CookieOptions = {
 };
 
 export const signAccessToken = (payload: AccessTokenPayload) => {
-  const accessTokenSecret = process.env.access_token_private;
+  const accessTokenSecret = process.env.access_token_private || '';
 
-  return jwt.sign(payload, accessTokenSecret!, {
+  return jwt.sign(payload, accessTokenSecret, {
     expiresIn: TokenExpiration.Access,
     algorithm: 'RS256',
   });
@@ -21,8 +21,8 @@ export const signAccessToken = (payload: AccessTokenPayload) => {
 
 export const verifyAccessToken = (token: string): AccessToken | null => {
   try {
-    const accessTokenSecret = process.env.access_token_public;
-    const decoded = jwt.verify(token, accessTokenSecret!);
+    const accessTokenSecret = process.env.access_token_public || '';
+    const decoded = jwt.verify(token, accessTokenSecret);
     return decoded as AccessToken;
   } catch (error) {
     return null;
@@ -30,8 +30,8 @@ export const verifyAccessToken = (token: string): AccessToken | null => {
 };
 
 export const signRefreshToken = (payload: RefreshTokenPayload) => {
-  const refreshTokenSecret = process.env.refresh_token_private;
-  return jwt.sign(payload, refreshTokenSecret!, {
+  const refreshTokenSecret = process.env.refresh_token_private || '';
+  return jwt.sign(payload, refreshTokenSecret, {
     expiresIn: TokenExpiration.Refresh,
     algorithm: 'RS256',
   });
@@ -39,8 +39,8 @@ export const signRefreshToken = (payload: RefreshTokenPayload) => {
 
 export const verifyRefreshToken = (token: string): RefreshTokenPayload | null => {
   try {
-    const refreshTokenSecret = process.env.refresh_token_public;
-    const decoded = jwt.verify(token, refreshTokenSecret!);
+    const refreshTokenSecret = process.env.refresh_token_public || '';
+    const decoded = jwt.verify(token, refreshTokenSecret);
     return decoded as RefreshTokenPayload;
   } catch (error) {
     return null;
