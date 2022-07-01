@@ -3,13 +3,13 @@ import AppDataSource from '../../data-source';
 import EmailAlreadyExist from '../../exceptions/emailAlreadyExist.exception';
 import HttpException from '../../exceptions/http.exception';
 import Users from '../users/users.entity';
-import bcrypt from 'bcrypt';
 import { loginDTO, registerDTO } from './auth.dto';
 import EmailPasswordDoesNotMatch from '../../exceptions/emailPasswordDoesNotMatch.exception';
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../../utils/token.util';
 import MissingTokenException from '../../exceptions/missingToken.exception';
 import invalidTokenException from '../../exceptions/InvalidToken.exception';
 import { isQueryFailedError } from '../../utils/db.util';
+import { comparePassword, hashPassword } from '../../utils/hash.util';
 
 class AuthService {
   private userRepository: Repository<Users>;
@@ -20,7 +20,7 @@ class AuthService {
 
   public register = async (userData: registerDTO): Promise<Users> => {
     try {
-      const hashed_password = await bcrypt.hash(userData.password, 11);
+      const hashed_password = await hashPassword(userData.password)
       const newUser = this.userRepository.create({ ...userData, password: hashed_password });
       await this.userRepository.save(newUser);
       return newUser;
@@ -42,7 +42,7 @@ class AuthService {
       .getOne();
     if (!user) throw new EmailPasswordDoesNotMatch();
 
-    const isMatch = await bcrypt.compare(loginData.password, user.password);
+    const isMatch = await comparePassword(loginData.password, user.password);
     if (!isMatch) throw new EmailPasswordDoesNotMatch();
 
     const accessToken = signAccessToken({
