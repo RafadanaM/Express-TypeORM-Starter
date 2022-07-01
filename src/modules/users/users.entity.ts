@@ -15,7 +15,7 @@ class Users {
   public email!: string;
 
   @Column({ select: false })
-  public password?: string;
+  public password!: string;
 
   @Column()
   public birth_date!: Date;

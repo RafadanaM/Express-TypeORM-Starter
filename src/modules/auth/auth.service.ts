@@ -1,4 +1,4 @@
-import { QueryFailedError, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import AppDataSource from '../../data-source';
 import EmailAlreadyExist from '../../exceptions/emailAlreadyExist.exception';
 import HttpException from '../../exceptions/http.exception';
@@ -42,7 +42,7 @@ class AuthService {
       .getOne();
     if (!user) throw new EmailPasswordDoesNotMatch();
 
-    const isMatch = await bcrypt.compare(loginData.password, user.password!);
+    const isMatch = await bcrypt.compare(loginData.password, user.password);
     if (!isMatch) throw new EmailPasswordDoesNotMatch();
 
     const accessToken = signAccessToken({

@@ -14,10 +14,10 @@ class UsersController implements Controller {
   }
 
   private initRoutes() {
-    this.router.get('', authMiddleware, this.getUsers);_
+    this.router.get('', authMiddleware, this.getUsers);
   }
 
-  private getUsers = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  private getUsers = async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       res.send(await this.usersService.getUsers());
     } catch (error) {
