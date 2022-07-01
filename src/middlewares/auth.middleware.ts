@@ -7,7 +7,11 @@ interface AuthResponseLocals {
   user_email: string;
 }
 
-const authMiddleware = async (request: Request, response: Response<{}, AuthResponseLocals>, next: NextFunction) => {
+const authMiddleware = async (
+  request: Request,
+  response: Response<Record<string, never>, AuthResponseLocals>,
+  next: NextFunction,
+) => {
   const authHeader = request.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) return next(new MissingTokenException());
