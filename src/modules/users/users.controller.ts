@@ -4,11 +4,13 @@ import authMiddleware from '../../middlewares/auth.middleware';
 import UsersService from './users.service';
 
 class UsersController implements Controller {
-  public path = '/users';
-  public router: Router = Router();
+  public path: string;
+  public router: Router;
   private usersService: UsersService;
 
   constructor() {
+    this.path = '/users';
+    this.router = Router();
     this.usersService = new UsersService();
     this.initRoutes();
   }
