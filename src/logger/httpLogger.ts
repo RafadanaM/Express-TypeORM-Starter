@@ -1,7 +1,7 @@
 import pinoHttp from 'pino-http';
 import logger from './logger';
 
-const loggerMiddleware = pinoHttp({
+const httpLogger = pinoHttp({
   logger: logger,
   autoLogging: true,
 
@@ -16,6 +16,10 @@ const loggerMiddleware = pinoHttp({
   customSuccessMessage(req, res) {
     return `RESPONSE: (ID:${req.id}) ${req.method} ${req.url} ${res.statusCode} ${res.statusMessage}`;
   },
+
+  customErrorMessage(req, res, error) {
+    return `Error: (ID:${req.id}) ${req.method} ${req.url} ${res.statusCode} ${error.message}`;
+  },
 });
 
-export default loggerMiddleware;
+export default httpLogger;

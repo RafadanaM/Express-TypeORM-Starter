@@ -35,9 +35,9 @@ class AuthController implements Controller {
     try {
       const body = req.body;
       const response = await this.authService.register(body);
-      res.send(response);
+      return res.send(response);
     } catch (error) {
-      next(error);
+      return next(error);
     }
   };
 
@@ -54,9 +54,9 @@ class AuthController implements Controller {
       }
       const { accessToken, refreshToken } = await this.authService.login(body, oldRefreshToken);
       res.cookie('refresh', refreshToken, refreshCookieOption);
-      res.send({ accessToken });
+      return res.send({ accessToken });
     } catch (error) {
-      next(error);
+      return next(error);
     }
   };
 
@@ -79,10 +79,10 @@ class AuthController implements Controller {
       const { accessToken, refreshToken } = await this.authService.refreshHandler(mRefreshToken);
       res.cookie('refresh', refreshToken, refreshCookieOption);
 
-      res.send({ accessToken });
+      return res.send({ accessToken });
     } catch (error) {
       res.clearCookie('refresh');
-      next(error);
+      return next(error);
     }
   };
 }

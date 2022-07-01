@@ -1,11 +1,12 @@
 import express from 'express';
-import Controller from './interfaces/controller.interface';
-import errorMiddleware from './middlewares/error.middleware';
-import NotFoundMiddleware from './middlewares/notfound.middleware';
+import compression from 'compression';
 import cors from 'cors';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
-import loggerMiddleware from './logger/loggerMiddleware';
+import Controller from './interfaces/controller.interface';
+import errorMiddleware from './middlewares/error.middleware';
+import NotFoundMiddleware from './middlewares/notfound.middleware';
+import httpLooger from './logger/httpLogger';
 import logger from './logger/logger';
 
 class App {
@@ -20,17 +21,18 @@ class App {
     this.initControllers(controllers);
     this.initErrorHandling();
     this.initRouteNotFound();
-    this.initUnhandledRejection()
-    this.initUncaughtException()
+    this.initUnhandledRejection();
+    this.initUncaughtException();
   }
 
   private initMiddlewares() {
-    this.app.use(loggerMiddleware);
-    this.app.use(cookieParser());
     this.app.use(helmet());
+    this.app.use(cookieParser());
     this.app.use(cors({ origin: process.env.ORIGIN }));
+    this.app.use(compression());
     this.app.use(express.json());
     this.app.use(express.urlencoded({ extended: true }));
+    this.app.use(httpLooger);
   }
 
   private initControllers(controllers: Controller[]) {

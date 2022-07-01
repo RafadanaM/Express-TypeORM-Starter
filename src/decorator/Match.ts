@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ClassConstructor } from 'class-transformer';
 import {
   registerDecorator,
@@ -8,7 +9,11 @@ import {
 } from 'class-validator';
 
 // src: https://github.com/typestack/class-validator/issues/486#issuecomment-888484124
-export const Match = <T>(type: ClassConstructor<T>, property: (o: T) => any, validationOptions?: ValidationOptions) => {
+export const Match = <T>(
+  _type: ClassConstructor<T>,
+  property: (o: T) => any,
+  validationOptions?: ValidationOptions,
+) => {
   return (object: any, propertyName: string) => {
     registerDecorator({
       target: object.constructor,
