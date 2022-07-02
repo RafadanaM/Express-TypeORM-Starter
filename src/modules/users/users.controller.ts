@@ -1,9 +1,9 @@
 import { Router, Request, Response, NextFunction } from 'express';
-import Controller from '../../interfaces/controller.interface';
+import BaseController from '../../interfaces/baseController.interface';
 import authMiddleware from '../../middlewares/auth.middleware';
 import UsersService from './users.service';
 
-class UsersController implements Controller {
+class UsersController implements BaseController {
   public path: string;
   public router: Router;
   private usersService: UsersService;

@@ -3,7 +3,7 @@ import compression from 'compression';
 import cors from 'cors';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
-import Controller from './interfaces/controller.interface';
+import Controller from './interfaces/baseController.interface';
 import errorMiddleware from './middlewares/error.middleware';
 import NotFoundMiddleware from './middlewares/notfound.middleware';
 import httpLooger from './logger/httpLogger';

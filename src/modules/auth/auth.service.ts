@@ -10,19 +10,20 @@ import MissingTokenException from '../../exceptions/missingToken.exception';
 import invalidTokenException from '../../exceptions/InvalidToken.exception';
 import { isQueryFailedError } from '../../utils/db.util';
 import { comparePassword, hashPassword } from '../../utils/hash.util';
+import BaseService from '../../interfaces/baseService.interface';
 
-class AuthService {
-  private userRepository: Repository<Users>;
+class AuthService implements BaseService {
+  baseRepository: Repository<Users>;
 
   constructor() {
-    this.userRepository = AppDataSource.getRepository(Users);
+    this.baseRepository = AppDataSource.getRepository(Users);
   }
 
   public register = async (userData: registerDTO): Promise<Users> => {
     try {
-      const hashed_password = await hashPassword(userData.password)
-      const newUser = this.userRepository.create({ ...userData, password: hashed_password });
-      await this.userRepository.save(newUser);
+      const hashed_password = await hashPassword(userData.password);
+      const newUser = this.baseRepository.create({ ...userData, password: hashed_password });
+      await this.baseRepository.save(newUser);
       return newUser;
     } catch (error) {
       if (isQueryFailedError(error)) {
@@ -35,7 +36,7 @@ class AuthService {
   };
 
   public login = async (loginData: loginDTO, oldToken: string | undefined) => {
-    const user = await this.userRepository
+    const user = await this.baseRepository
       .createQueryBuilder('users')
       .select(['users.email', 'users.first_name', 'users.last_name', 'users.password', 'users.refresh_tokens'])
       .where('users.email = :email', { email: loginData.email })
@@ -55,8 +56,7 @@ class AuthService {
     // If there's an old token in cookie when loggin in, then remove that token from list
     const newRefreshTokens =
       oldToken === undefined ? user.refresh_tokens : user.refresh_tokens.filter((rt) => rt !== oldToken);
-
-    await this.userRepository
+    await this.baseRepository
       .createQueryBuilder('users')
       .update()
       .set({ refresh_tokens: [...newRefreshTokens, refreshToken] })
@@ -67,7 +67,7 @@ class AuthService {
   };
 
   public logout = async (token: string) => {
-    const user = await this.userRepository
+    const user = await this.baseRepository
       .createQueryBuilder('users')
       .select(['users.email', 'users.refresh_tokens'])
       .where(':token = ANY (users.refresh_tokens)', { token: token })
@@ -75,7 +75,7 @@ class AuthService {
 
     if (user) {
       const filteredRefreshTokens = user.refresh_tokens.filter((rt) => rt !== token);
-      await this.userRepository
+      await this.baseRepository
         .createQueryBuilder('users')
         .update()
         .set({ refresh_tokens: [...filteredRefreshTokens] })
@@ -91,7 +91,7 @@ class AuthService {
     const refreshTokenResponse = verifyRefreshToken(token);
     // if token is invalid/expires
     if (refreshTokenResponse === null) {
-      const mUser = await this.userRepository
+      const mUser = await this.baseRepository
         .createQueryBuilder('users')
         .select(['users.email , users.refresh_tokens'])
         .where(':token = ANY (users.refresh_tokens)', { token: token })
@@ -99,7 +99,7 @@ class AuthService {
 
       // if user with the expired/invalid token exist, then remove the token
       if (mUser) {
-        await this.userRepository
+        await this.baseRepository
           .createQueryBuilder('users')
           .update()
           .set({ refresh_tokens: [...mUser.refresh_tokens.filter((rt) => rt !== token)] })
@@ -109,7 +109,7 @@ class AuthService {
       throw new invalidTokenException();
     }
     // Token is valid
-    const user = await this.userRepository
+    const user = await this.baseRepository
       .createQueryBuilder('users')
       .select(['users.email', 'users.first_name', 'users.last_name', 'users.refresh_tokens'])
       .where('users.email = :email', { email: refreshTokenResponse.email })
@@ -121,7 +121,7 @@ class AuthService {
     if (userRefreshTokenIndex === -1) {
       // Then it is token re-use, empty the users refresh_token
       user.refresh_tokens = [];
-      await this.userRepository
+      await this.baseRepository
         .createQueryBuilder('users')
         .update()
         .set({ refresh_tokens: [] })
@@ -140,7 +140,7 @@ class AuthService {
       last_name: user.last_name,
     });
 
-    await this.userRepository
+    await this.baseRepository
       .createQueryBuilder('users')
       .update()
       .set({ refresh_tokens: [...user.refresh_tokens.filter((x) => x !== token), refreshToken] })

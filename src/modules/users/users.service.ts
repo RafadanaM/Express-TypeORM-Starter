@@ -2,18 +2,19 @@ import AppDataSource from '../../data-source';
 import logger from '../../logger/logger';
 import Users from './users.entity';
 import { Repository } from 'typeorm';
+import BaseService from '../../interfaces/baseService.interface';
 
-class UsersService {
-  private userRepository: Repository<Users>;
+class UsersService implements BaseService {
+  baseRepository: Repository<Users>;
 
   constructor() {
-    this.userRepository = AppDataSource.getRepository(Users);
+    this.baseRepository = AppDataSource.getRepository(Users);
   }
 
   public getUsers = async (): Promise<Users[]> => {
     logger.info('oi');
 
-    return await this.userRepository.find();
+    return await this.baseRepository.find();
   };
 }
 
