@@ -2,10 +2,10 @@
   "name": "express",
   "version": "1.0.0",
   "description": "",
-  "main": "build/server.js",
+  "main": "build/bin/www/server.js",
   "scripts": {
-    "dev": "cross-env NODE_ENV=development ts-node-dev src/server.ts",
-    "start": "cross-env NODE_ENV=production node ./build/server.js",
+    "dev": "cross-env NODE_ENV=development ts-node-dev src/bin/www/server.ts",
+    "start": "cross-env NODE_ENV=production node ./build/bin/www/server.js",
     "build": "rimraf ./build && tsc ",
     "test": "echo \"Error: no test specified\" && exit 1",
     "typeorm": "typeorm-ts-node-commonjs -d ./src/data-source.ts",
