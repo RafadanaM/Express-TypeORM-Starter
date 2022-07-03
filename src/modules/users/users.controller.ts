@@ -26,11 +26,11 @@ class UsersController implements BaseController {
   }
 
   private initRoutes() {
-    this.router.get('', authMiddleware, this.getUsers);
-    this.router.patch('', authMiddleware, this.userUpload.single('photo'), this.updatePhoto);
+    this.router.get('', authMiddleware, this.getUsersHandler);
+    this.router.patch('', authMiddleware, this.userUpload.single('photo'), this.updateAvatarHandler);
   }
 
-  private getUsers = async (_req: Request, res: Response, next: NextFunction) => {
+  private getUsersHandler = async (_req: Request, res: Response, next: NextFunction) => {
     try {
       return res.send(await this.usersService.getUsers());
     } catch (error) {
@@ -38,7 +38,7 @@ class UsersController implements BaseController {
     }
   };
 
-  private updatePhoto = async (
+  private updateAvatarHandler = async (
     req: Request<Record<string, never>>,
     res: Response<UpdatePhotoResponse, AuthResponseLocals>,
     next: NextFunction,

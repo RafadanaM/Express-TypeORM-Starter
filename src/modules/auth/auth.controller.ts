@@ -20,13 +20,13 @@ class AuthController implements BaseController {
     this.initRoutes();
   }
   private initRoutes() {
-    this.router.get('/refresh', this.refresh);
-    this.router.get('/logout', this.logout);
-    this.router.post('/login', validationMiddleware(loginDTO, RequestTypes.BODY), this.login);
-    this.router.post('/register', validationMiddleware(registerDTO, RequestTypes.BODY), this.register);
+    this.router.get('/refresh', this.refreshHandler);
+    this.router.get('/logout', this.logoutHandler);
+    this.router.post('/login', validationMiddleware(loginDTO, RequestTypes.BODY), this.loginHandler);
+    this.router.post('/register', validationMiddleware(registerDTO, RequestTypes.BODY), this.registerHandler);
   }
 
-  private register = async (
+  private registerHandler = async (
     req: Request<Record<string, never>, RegisterResponse, registerDTO>,
     res: Response<RegisterResponse>,
     next: NextFunction,
@@ -40,7 +40,7 @@ class AuthController implements BaseController {
     }
   };
 
-  private login = async (
+  private loginHandler = async (
     req: Request<Record<string, never>, AccessTokenResponse, loginDTO>,
     res: Response<AccessTokenResponse>,
     next: NextFunction,
@@ -59,7 +59,7 @@ class AuthController implements BaseController {
     }
   };
 
-  private logout = async (req: Request, res: Response, next: NextFunction) => {
+  private logoutHandler = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const mRefreshToken: string | undefined = req.cookies[Cookies.REFRESH_TOKEN];
       if (mRefreshToken) {
@@ -72,10 +72,10 @@ class AuthController implements BaseController {
     }
   };
 
-  private refresh = async (req: Request, res: Response<AccessTokenResponse>, next: NextFunction) => {
+  private refreshHandler = async (req: Request, res: Response<AccessTokenResponse>, next: NextFunction) => {
     try {
       const mRefreshToken: string | undefined = req.cookies[Cookies.REFRESH_TOKEN];
-      const { accessToken, refreshToken } = await this.authService.refreshHandler(mRefreshToken);
+      const { accessToken, refreshToken } = await this.authService.refresh(mRefreshToken);
       res.cookie('refresh', refreshToken, refreshCookieOption);
 
       return res.send({ accessToken });

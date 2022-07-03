@@ -92,7 +92,7 @@ class AuthService implements BaseService {
     return;
   };
 
-  public refreshHandler = async (token: string | undefined) => {
+  public refresh = async (token: string | undefined) => {
     if (token === undefined) throw new MissingTokenException();
 
     const refreshTokenResponse = verifyRefreshToken(token);
