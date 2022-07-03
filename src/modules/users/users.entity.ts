@@ -23,6 +23,9 @@ class Users {
   @Column('text', { array: true, default: () => 'array[]::text[]' })
   public refresh_tokens!: string[];
 
+  @Column({ nullable: true, default: null })
+  public avatar!: string;
+
   @CreateDateColumn()
   public created!: Date;
 

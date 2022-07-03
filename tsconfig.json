@@ -1,10 +1,11 @@
 {
 	"compilerOptions": {
 		"outDir": "build",
-      	"lib": ["esnext"],
-      	"module": "commonjs",
-      	"target": "es2016",
+      	"lib": ["es2021"],
+      	"module": "CommonJs",
+      	"target": "es2021",
 		"strict": true,
+		"moduleResolution": "node",
 		"allowUnreachableCode": false,
 		"allowUnusedLabels": false,
 		"skipLibCheck": true,
@@ -17,12 +18,11 @@
 		"noUnusedLocals": true,
 		"noUnusedParameters": true,
 		"noImplicitReturns": true,
+		"esModuleInterop": true,
 		"noFallthroughCasesInSwitch": true,
 		"allowSyntheticDefaultImports": true,
-		"esModuleInterop": true,
 		"emitDecoratorMetadata": true,
 		"experimentalDecorators": true,
-		"resolveJsonModule": true,
 		"baseUrl": "."
 	},
 	"exclude": ["node_modules"],

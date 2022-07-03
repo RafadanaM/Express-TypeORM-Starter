@@ -11,6 +11,7 @@ import invalidTokenException from '../../exceptions/InvalidToken.exception';
 import { isQueryFailedError } from '../../utils/db.util';
 import { comparePassword, hashPassword } from '../../utils/hash.util';
 import BaseService from '../../interfaces/baseService.interface';
+import { RegisterResponse } from './auth.response';
 
 class AuthService implements BaseService {
   baseRepository: Repository<Users>;
@@ -19,12 +20,18 @@ class AuthService implements BaseService {
     this.baseRepository = AppDataSource.getRepository(Users);
   }
 
-  public register = async (userData: registerDTO): Promise<Users> => {
+  public register = async (userData: registerDTO): Promise<RegisterResponse> => {
     try {
       const hashed_password = await hashPassword(userData.password);
       const newUser = this.baseRepository.create({ ...userData, password: hashed_password });
       await this.baseRepository.save(newUser);
-      return newUser;
+      const registerResponse: RegisterResponse = {
+        first_name: newUser.first_name,
+        last_name: newUser.last_name,
+        email: newUser.email,
+        birth_date: newUser.birth_date,
+      };
+      return registerResponse;
     } catch (error) {
       if (isQueryFailedError(error)) {
         if (error.code === '23505') {

@@ -6,7 +6,7 @@ import cookieParser from 'cookie-parser';
 import Controller from './interfaces/baseController.interface';
 import errorMiddleware from './middlewares/error.middleware';
 import NotFoundMiddleware from './middlewares/notfound.middleware';
-import httpLooger from './logger/httpLogger';
+import httpLogger from './logger/httpLogger';
 import logger from './logger/logger';
 
 class App {
@@ -32,7 +32,7 @@ class App {
     this.app.use(compression());
     this.app.use(express.json());
     this.app.use(express.urlencoded({ extended: true }));
-    this.app.use(httpLooger);
+    this.app.use(httpLogger);
   }
 
   private initControllers(controllers: Controller[]) {
@@ -64,7 +64,7 @@ class App {
 
   public listen() {
     this.app.listen(this.port, () => {
-      console.log(`app is listening on port ${this.port}`);
+      console.log(`🚀 Server ready at port: ${this.port}`);
     });
   }
 }

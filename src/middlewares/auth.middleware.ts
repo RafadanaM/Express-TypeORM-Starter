@@ -1,11 +1,8 @@
 import { NextFunction, Request, Response } from 'express';
 import invalidTokenException from '../exceptions/InvalidToken.exception';
 import MissingTokenException from '../exceptions/missingToken.exception';
+import AuthResponseLocals from '../interfaces/authResponseLocal.interface';
 import { verifyAccessToken } from '../utils/token.util';
-
-interface AuthResponseLocals {
-  user_email: string;
-}
 
 const authMiddleware = async (
   request: Request,

@@ -5,6 +5,7 @@ import BaseController from '../../interfaces/baseController.interface';
 import validationMiddleware from '../../middlewares/validation.middleware';
 import { refreshCookieOption } from '../../utils/token.util';
 import { loginDTO, registerDTO } from './auth.dto';
+import { AccessTokenResponse, RegisterResponse } from './auth.response';
 import AuthService from './auth.service';
 
 class AuthController implements BaseController {
@@ -26,8 +27,8 @@ class AuthController implements BaseController {
   }
 
   private register = async (
-    req: Request<Record<string, never>, Record<string, never>, registerDTO>,
-    res: Response,
+    req: Request<Record<string, never>, RegisterResponse, registerDTO>,
+    res: Response<RegisterResponse>,
     next: NextFunction,
   ) => {
     try {
@@ -40,8 +41,8 @@ class AuthController implements BaseController {
   };
 
   private login = async (
-    req: Request<Record<string, never>, Record<string, never>, loginDTO>,
-    res: Response,
+    req: Request<Record<string, never>, AccessTokenResponse, loginDTO>,
+    res: Response<AccessTokenResponse>,
     next: NextFunction,
   ) => {
     try {
@@ -71,7 +72,7 @@ class AuthController implements BaseController {
     }
   };
 
-  private refresh = async (req: Request, res: Response, next: NextFunction) => {
+  private refresh = async (req: Request, res: Response<AccessTokenResponse>, next: NextFunction) => {
     try {
       const mRefreshToken: string | undefined = req.cookies[Cookies.RefreshToken];
       const { accessToken, refreshToken } = await this.authService.refreshHandler(mRefreshToken);

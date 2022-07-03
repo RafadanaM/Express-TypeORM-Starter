@@ -1,5 +1,4 @@
 import AppDataSource from '../../data-source';
-import logger from '../../logger/logger';
 import Users from './users.entity';
 import { Repository } from 'typeorm';
 import BaseService from '../../interfaces/baseService.interface';
@@ -12,9 +11,19 @@ class UsersService implements BaseService {
   }
 
   public getUsers = async (): Promise<Users[]> => {
-    logger.info('oi');
-
     return await this.baseRepository.find();
+  };
+
+  public updateAvatar = async (email: string, avatarPath: string) => {
+    await this.baseRepository
+      .createQueryBuilder('users')
+      .update()
+      .set({
+        avatar: avatarPath,
+      })
+      .where('users.email = :email', { email: email })
+      .execute();
+    return avatarPath;
   };
 }
 

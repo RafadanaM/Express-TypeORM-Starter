@@ -6,7 +6,6 @@ const httpLogger = pinoHttp({
   autoLogging: true,
 
   wrapSerializers: false,
-
   serializers: {},
 
   customReceivedMessage(req, _) {
