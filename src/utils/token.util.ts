@@ -7,14 +7,14 @@ export const refreshCookieOption: CookieOptions = {
   httpOnly: true,
   // secure: true,
   // sameSite: 'none',
-  maxAge: TokenExpiration.Refresh * 1000,
+  maxAge: TokenExpiration.REFRESH * 1000,
 };
 
 export const signAccessToken = (payload: AccessTokenPayload) => {
   const accessTokenSecret = process.env.access_token_private || '';
 
   return jwt.sign(payload, accessTokenSecret, {
-    expiresIn: TokenExpiration.Access,
+    expiresIn: TokenExpiration.ACCESS,
     algorithm: 'RS256',
   });
 };
@@ -32,7 +32,7 @@ export const verifyAccessToken = (token: string): AccessToken | null => {
 export const signRefreshToken = (payload: RefreshTokenPayload) => {
   const refreshTokenSecret = process.env.refresh_token_private || '';
   return jwt.sign(payload, refreshTokenSecret, {
-    expiresIn: TokenExpiration.Refresh,
+    expiresIn: TokenExpiration.REFRESH,
     algorithm: 'RS256',
   });
 };

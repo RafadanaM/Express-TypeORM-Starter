@@ -47,7 +47,7 @@ class AuthController implements BaseController {
   ) => {
     try {
       const body = req.body;
-      const oldRefreshToken: string | undefined = req.cookies[Cookies.RefreshToken];
+      const oldRefreshToken: string | undefined = req.cookies[Cookies.REFRESH_TOKEN];
       if (oldRefreshToken === undefined) {
         res.clearCookie('refresh');
       }
@@ -61,7 +61,7 @@ class AuthController implements BaseController {
 
   private logout = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const mRefreshToken: string | undefined = req.cookies[Cookies.RefreshToken];
+      const mRefreshToken: string | undefined = req.cookies[Cookies.REFRESH_TOKEN];
       if (mRefreshToken) {
         await this.authService.logout(mRefreshToken);
       }
@@ -74,7 +74,7 @@ class AuthController implements BaseController {
 
   private refresh = async (req: Request, res: Response<AccessTokenResponse>, next: NextFunction) => {
     try {
-      const mRefreshToken: string | undefined = req.cookies[Cookies.RefreshToken];
+      const mRefreshToken: string | undefined = req.cookies[Cookies.REFRESH_TOKEN];
       const { accessToken, refreshToken } = await this.authService.refreshHandler(mRefreshToken);
       res.cookie('refresh', refreshToken, refreshCookieOption);
 

@@ -1,9 +1,9 @@
 export enum TokenExpiration {
-  Access = 15 * 60, // 15 minutes
-  Refresh = 7 * 24 * 60 * 60, // 1 week
+  ACCESS = 15 * 60, // 15 minutes
+  REFRESH = 7 * 24 * 60 * 60, // 1 week
 }
 
 export enum Cookies {
-  AccessToken = 'access',
-  RefreshToken = 'refresh',
+  ACCESS_TOKEN = 'access',
+  REFRESH_TOKEN = 'refresh',
 }
