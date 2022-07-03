@@ -20,7 +20,7 @@ class Users {
   @Column()
   public birth_date!: Date;
 
-  @Column('text', { array: true, default: () => 'array[]::text[]' })
+  @Column('text', { select: false, array: true, default: () => 'array[]::text[]' })
   public refresh_tokens!: string[];
 
   @Column({ nullable: true, default: null })

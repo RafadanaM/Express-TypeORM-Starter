@@ -7,6 +7,7 @@ import upload from '../../utils/multer.util';
 import HttpException from '../../exceptions/http.exception';
 import AuthResponseLocals from '../../interfaces/authResponseLocal.interface';
 import { UpdatePhotoResponse } from './users.response';
+import Users from './users.entity';
 
 class UsersController implements BaseController {
   public path: string;
@@ -28,11 +29,25 @@ class UsersController implements BaseController {
   private initRoutes() {
     this.router.get('', authMiddleware, this.getUsersHandler);
     this.router.patch('', authMiddleware, this.userUpload.single('photo'), this.updateAvatarHandler);
+    this.router.get('/profile', authMiddleware, this.getUserByEmailHandler);
   }
 
   private getUsersHandler = async (_req: Request, res: Response, next: NextFunction) => {
     try {
       return res.send(await this.usersService.getUsers());
+    } catch (error) {
+      return next(error);
+    }
+  };
+
+  private getUserByEmailHandler = async (
+    _req: Request,
+    res: Response<Users, AuthResponseLocals>,
+    next: NextFunction,
+  ) => {
+    try {
+      const email = res.locals.user_email;
+      return res.send(await this.usersService.getUserByEmail(email));
     } catch (error) {
       return next(error);
     }
