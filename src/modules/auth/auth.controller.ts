@@ -40,6 +40,7 @@ class AuthController implements BaseController {
     }
   };
 
+
   private loginHandler = async (
     req: Request<Record<string, never>, AccessTokenResponse, loginDTO>,
     res: Response<AccessTokenResponse>,
@@ -53,7 +54,7 @@ class AuthController implements BaseController {
       }
       const { accessToken, refreshToken } = await this.authService.login(body, oldRefreshToken);
       res.cookie('refresh', refreshToken, refreshCookieOption);
-      return res.send({ accessToken });
+      return res.status(201).send({ accessToken });
     } catch (error) {
       return next(error);
     }

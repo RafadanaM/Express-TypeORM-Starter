@@ -3,12 +3,13 @@ import compression from 'compression';
 import cors from 'cors';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
+import swaggerUi from 'swagger-ui-express';
 import Controller from './interfaces/baseController.interface';
 import errorMiddleware from './middlewares/error.middleware';
 import NotFoundMiddleware from './middlewares/notfound.middleware';
 import httpLogger from './logger/httpLogger';
 import logger from './logger/logger';
-
+import options from '../docs/swaggerOption';
 class App {
   public app: express.Application;
 
@@ -29,10 +30,12 @@ class App {
     this.app.use(helmet());
     this.app.use(cookieParser());
     this.app.use(cors({ origin: process.env.ORIGIN }));
+    // using nginx for compression is better, https://github.com/goldbergyoni/nodebestpractices/blob/master/sections/production/delegatetoproxy.md
     this.app.use(compression());
     this.app.use(express.json());
     this.app.use(express.urlencoded({ extended: true }));
     this.app.use(httpLogger);
+    this.app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(options, { explorer: true }));
   }
 
   private initControllers(controllers: Controller[]) {
