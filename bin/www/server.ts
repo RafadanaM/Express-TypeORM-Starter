@@ -1,10 +1,10 @@
 import 'dotenv/config';
 import App from '../../app';
-import UsersController from '../../modules/users/users.controller';
-import validateEnv from '../../utils/validateEnv';
+import UsersController from '../../src/modules/users/users.controller';
+import validateEnv from '../../src/utils/validateEnv';
 import 'reflect-metadata';
-import AppDataSource from '../../data-source';
-import AuthController from '../../modules/auth/auth.controller';
+import AppDataSource from '../../src/data-source';
+import AuthController from '../../src/modules/auth/auth.controller';
 validateEnv();
 
 AppDataSource.initialize()

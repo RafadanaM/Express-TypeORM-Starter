@@ -4,12 +4,12 @@ import cors from 'cors';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import swaggerUi from 'swagger-ui-express';
-import Controller from './interfaces/baseController.interface';
-import errorMiddleware from './middlewares/error.middleware';
-import NotFoundMiddleware from './middlewares/notfound.middleware';
-import httpLogger from './logger/httpLogger';
-import logger from './logger/logger';
-import options from '../docs/swaggerOption';
+import Controller from './src/interfaces/baseController.interface';
+import errorMiddleware from './src/middlewares/error.middleware';
+import NotFoundMiddleware from './src/middlewares/notfound.middleware';
+import httpLogger from './src/logger/httpLogger';
+import logger from './src/logger/logger';
+import options from './docs/swaggerOption';
 class App {
   public app: express.Application;
 
