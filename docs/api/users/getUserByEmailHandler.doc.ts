@@ -1,5 +1,5 @@
 /**
- *  @swagger
+ *  @openapi
  *  /users/profile:
  *    description: get loggedin user's profile
  *    get:

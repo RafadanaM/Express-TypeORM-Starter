@@ -1,7 +1,6 @@
 import swaggerJsdoc from 'swagger-jsdoc';
-import swaggerUi from 'swagger-ui-express';
 
-const swaggerOption: swaggerUi.JsonObject = {
+const swaggerOption: swaggerJsdoc.Options = {
   definition: {
     openapi: '3.0.3',
     info: {
@@ -37,7 +36,7 @@ const swaggerOption: swaggerUi.JsonObject = {
       },
     ],
   },
-  apis: ['./docs/api/**/*.doc.ts'],
+  apis: ['./docs/api/**/*.doc.ts', './src/modules/**/*.ts'],
 };
 const options = swaggerJsdoc(swaggerOption);
 

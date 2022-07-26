@@ -29,7 +29,7 @@ class App {
   private initMiddlewares() {
     this.app.use(helmet());
     this.app.use(cookieParser());
-    this.app.use(cors({ origin: process.env.ORIGIN }));
+    this.app.use(cors({ origin: process.env.ORIGIN, credentials: true }));
     // using nginx for compression is better, https://github.com/goldbergyoni/nodebestpractices/blob/master/sections/production/delegatetoproxy.md
     this.app.use(compression());
     this.app.use(express.json());

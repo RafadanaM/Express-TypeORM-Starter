@@ -1,22 +1,21 @@
 import AppDataSource from '../../data-source';
 import Users from './users.entity';
 import { Repository } from 'typeorm';
-import BaseService from '../../interfaces/baseService.interface';
 import UserDoesNotExist from '../../exceptions/userDoesNotExist.exception';
 
-class UsersService implements BaseService {
-  baseRepository: Repository<Users>;
+class UsersService {
+  usersRepository: Repository<Users>;
 
   constructor() {
-    this.baseRepository = AppDataSource.getRepository(Users);
+    this.usersRepository = AppDataSource.getRepository(Users);
   }
 
   public getUsers = async (): Promise<Users[]> => {
-    return await this.baseRepository.find();
+    return await this.usersRepository.find();
   };
 
   public getUserByEmail = async (email: string): Promise<Users> => {
-    const user = await this.baseRepository
+    const user = await this.usersRepository
       .createQueryBuilder('users')
       .where('users.email = :email', { email: email })
       .getOne();
@@ -26,7 +25,7 @@ class UsersService implements BaseService {
   };
 
   public updateAvatar = async (email: string, avatarPath: string): Promise<string> => {
-    await this.baseRepository
+    await this.usersRepository
       .createQueryBuilder('users')
       .update()
       .set({

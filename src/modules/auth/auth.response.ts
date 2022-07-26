@@ -1,10 +1,9 @@
+import Users from '../users/users.entity';
+
 export interface RegisterResponse {
-  first_name: string;
-  last_name: string;
-  email: string;
-  birth_date: Date;
+  message: string
 }
 
-export interface AccessTokenResponse {
-  accessToken: string;
+export interface LoginResponse {
+  user: Partial<Users>;
 }

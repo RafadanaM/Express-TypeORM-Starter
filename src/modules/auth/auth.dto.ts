@@ -1,6 +1,24 @@
 import { IsEmail, IsISO8601, IsString, Matches, MaxLength, MinLength } from 'class-validator';
 import { Match } from '../../decorator/Match';
 
+/**
+ * @openapi
+ * components:
+ *  schemas:
+ *    loginDTO:
+ *      type: object
+ *      required:
+ *        - email
+ *        - password
+ *      properties:
+ *        email:
+ *          type: string
+ *          default: jane.doe@example.com
+ *        password:
+ *          type: string
+ *          default: password
+ */
+
 export class loginDTO {
   @IsEmail()
   email!: string;

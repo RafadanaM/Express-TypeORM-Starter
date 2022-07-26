@@ -1,5 +1,5 @@
 /**
- *  @swagger
+ *  @openapi
  *  /users:
  *    description: get list of users
  *    get:

@@ -10,28 +10,21 @@ import MissingTokenException from '../../exceptions/missingToken.exception';
 import invalidTokenException from '../../exceptions/InvalidToken.exception';
 import { isQueryFailedError } from '../../utils/db.util';
 import { comparePassword, hashPassword } from '../../utils/hash.util';
-import BaseService from '../../interfaces/baseService.interface';
-import { RegisterResponse } from './auth.response';
 
-class AuthService implements BaseService {
-  baseRepository: Repository<Users>;
+class AuthService {
+  usersRepository: Repository<Users>;
 
   constructor() {
-    this.baseRepository = AppDataSource.getRepository(Users);
+    this.usersRepository = AppDataSource.getRepository(Users);
   }
 
-  public register = async (userData: registerDTO): Promise<RegisterResponse> => {
+  public register = async (userData: registerDTO): Promise<string> => {
     try {
       const hashed_password = await hashPassword(userData.password);
-      const newUser = this.baseRepository.create({ ...userData, password: hashed_password });
-      await this.baseRepository.save(newUser);
-      const registerResponse: RegisterResponse = {
-        first_name: newUser.first_name,
-        last_name: newUser.last_name,
-        email: newUser.email,
-        birth_date: newUser.birth_date,
-      };
-      return registerResponse;
+      const newUser = this.usersRepository.create({ ...userData, password: hashed_password });
+      await this.usersRepository.save(newUser);
+      const message = 'User created!';
+      return message;
     } catch (error) {
       if (isQueryFailedError(error)) {
         if (error.code === '23505') {
@@ -43,7 +36,7 @@ class AuthService implements BaseService {
   };
 
   public login = async (loginData: loginDTO, oldToken: string | undefined) => {
-    const user = await this.baseRepository
+    const user = await this.usersRepository
       .createQueryBuilder('users')
       .select(['users.email', 'users.first_name', 'users.last_name', 'users.password', 'users.refresh_tokens'])
       .where('users.email = :email', { email: loginData.email })
@@ -60,21 +53,27 @@ class AuthService implements BaseService {
     });
     const refreshToken = signRefreshToken({ email: user.email });
 
+    const userResponse: Partial<Users> = {
+      email: user.email,
+      first_name: user.first_name,
+      last_name: user.last_name,
+    };
+
     // If there's an old token in cookie when loggin in, then remove that token from list
     const newRefreshTokens =
       oldToken === undefined ? user.refresh_tokens : user.refresh_tokens.filter((rt) => rt !== oldToken);
-    await this.baseRepository
+    await this.usersRepository
       .createQueryBuilder('users')
       .update()
       .set({ refresh_tokens: [...newRefreshTokens, refreshToken] })
       .where('users.email = :email', { email: user.email })
       .execute();
 
-    return { accessToken, refreshToken };
+    return { accessToken, refreshToken, userResponse };
   };
 
   public logout = async (token: string) => {
-    const user = await this.baseRepository
+    const user = await this.usersRepository
       .createQueryBuilder('users')
       .select(['users.email', 'users.refresh_tokens'])
       .where(':token = ANY (users.refresh_tokens)', { token: token })
@@ -82,7 +81,7 @@ class AuthService implements BaseService {
 
     if (user) {
       const filteredRefreshTokens = user.refresh_tokens.filter((rt) => rt !== token);
-      await this.baseRepository
+      await this.usersRepository
         .createQueryBuilder('users')
         .update()
         .set({ refresh_tokens: [...filteredRefreshTokens] })
@@ -98,7 +97,7 @@ class AuthService implements BaseService {
     const refreshTokenResponse = verifyRefreshToken(token);
     // if token is invalid/expires
     if (refreshTokenResponse === null) {
-      const mUser = await this.baseRepository
+      const mUser = await this.usersRepository
         .createQueryBuilder('users')
         .select(['users.email , users.refresh_tokens'])
         .where(':token = ANY (users.refresh_tokens)', { token: token })
@@ -106,29 +105,32 @@ class AuthService implements BaseService {
 
       // if user with the expired/invalid token exist, then remove the token
       if (mUser) {
-        await this.baseRepository
+        await this.usersRepository
           .createQueryBuilder('users')
           .update()
           .set({ refresh_tokens: [...mUser.refresh_tokens.filter((rt) => rt !== token)] })
           .where('users.email = :email', { email: mUser.email })
           .execute();
       }
+
       throw new invalidTokenException();
     }
     // Token is valid
-    const user = await this.baseRepository
+    const user = await this.usersRepository
       .createQueryBuilder('users')
       .select(['users.email', 'users.first_name', 'users.last_name', 'users.refresh_tokens'])
       .where('users.email = :email', { email: refreshTokenResponse.email })
       .getOne();
-    if (!user) throw new invalidTokenException();
+    if (!user) {
+      throw new invalidTokenException();
+    }
 
     // if token does not exists on a users refresh_token
     const userRefreshTokenIndex = user.refresh_tokens.indexOf(token);
     if (userRefreshTokenIndex === -1) {
       // Then it is token re-use, empty the users refresh_token
       user.refresh_tokens = [];
-      await this.baseRepository
+      await this.usersRepository
         .createQueryBuilder('users')
         .update()
         .set({ refresh_tokens: [] })
@@ -147,13 +149,19 @@ class AuthService implements BaseService {
       last_name: user.last_name,
     });
 
-    await this.baseRepository
+    const userResponse: Partial<Users> = {
+      email: user.email,
+      first_name: user.first_name,
+      last_name: user.last_name,
+    };
+
+    await this.usersRepository
       .createQueryBuilder('users')
       .update()
       .set({ refresh_tokens: [...user.refresh_tokens.filter((x) => x !== token), refreshToken] })
       .where('users.email = :email', { email: user.email })
       .execute();
-    return { accessToken, refreshToken };
+    return { accessToken, refreshToken, userResponse };
   };
 }
 export default AuthService;

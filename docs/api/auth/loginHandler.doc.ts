@@ -1,5 +1,5 @@
 /**
- *  @swagger
+ *  @openapi
  *  /auth/login:
  *    description: Login User with Email and Password
  *    post:
@@ -7,14 +7,10 @@
  *        - Auth
  *      requestBody:
  *        required: true
- *        content:
+ *        contents:
  *          application/json:
  *            schema:
- *              properties:
- *                email:
- *                  type: string
- *                password:
- *                  type: string
+ *              $ref: '#/components/schemas/loginDTO'
  *      responses:
  *        201:
  *          description: Successfully logged in, returns accesToken

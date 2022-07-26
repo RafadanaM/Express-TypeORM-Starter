@@ -2,10 +2,11 @@ import { NextFunction, Request, Response, Router } from 'express';
 import { RequestTypes } from '../../enums/request.enum';
 import { Cookies } from '../../enums/token.enum';
 import BaseController from '../../interfaces/baseController.interface';
+
 import validationMiddleware from '../../middlewares/validation.middleware';
-import { refreshCookieOption } from '../../utils/token.util';
+import { accessCookieOption, refreshCookieOption } from '../../utils/token.util';
 import { loginDTO, registerDTO } from './auth.dto';
-import { AccessTokenResponse, RegisterResponse } from './auth.response';
+import { LoginResponse, RegisterResponse } from './auth.response';
 import AuthService from './auth.service';
 
 class AuthController implements BaseController {
@@ -33,17 +34,16 @@ class AuthController implements BaseController {
   ) => {
     try {
       const body = req.body;
-      const response = await this.authService.register(body);
-      return res.send(response);
+      const message = await this.authService.register(body);
+      return res.send({ message });
     } catch (error) {
       return next(error);
     }
   };
 
-
   private loginHandler = async (
-    req: Request<Record<string, never>, AccessTokenResponse, loginDTO>,
-    res: Response<AccessTokenResponse>,
+    req: Request<Record<string, never>, LoginResponse, loginDTO>,
+    res: Response<LoginResponse>,
     next: NextFunction,
   ) => {
     try {
@@ -52,9 +52,10 @@ class AuthController implements BaseController {
       if (oldRefreshToken === undefined) {
         res.clearCookie('refresh');
       }
-      const { accessToken, refreshToken } = await this.authService.login(body, oldRefreshToken);
-      res.cookie('refresh', refreshToken, refreshCookieOption);
-      return res.status(201).send({ accessToken });
+      const { accessToken, refreshToken, userResponse } = await this.authService.login(body, oldRefreshToken);
+      res.cookie(Cookies.ACCESS_TOKEN, accessToken, accessCookieOption);
+      res.cookie(Cookies.REFRESH_TOKEN, refreshToken, refreshCookieOption);
+      return res.status(201).send({ user: userResponse });
     } catch (error) {
       return next(error);
     }
@@ -66,22 +67,26 @@ class AuthController implements BaseController {
       if (mRefreshToken) {
         await this.authService.logout(mRefreshToken);
       }
-      res.clearCookie('refresh');
+      res.clearCookie(Cookies.ACCESS_TOKEN);
+      res.clearCookie(Cookies.REFRESH_TOKEN);
       res.sendStatus(204);
     } catch (error) {
       next(error);
     }
   };
 
-  private refreshHandler = async (req: Request, res: Response<AccessTokenResponse>, next: NextFunction) => {
+  private refreshHandler = async (req: Request, res: Response<LoginResponse>, next: NextFunction) => {
     try {
       const mRefreshToken: string | undefined = req.cookies[Cookies.REFRESH_TOKEN];
-      const { accessToken, refreshToken } = await this.authService.refresh(mRefreshToken);
-      res.cookie('refresh', refreshToken, refreshCookieOption);
+      const { accessToken, refreshToken, userResponse } = await this.authService.refresh(mRefreshToken);
 
-      return res.send({ accessToken });
+      res.cookie(Cookies.ACCESS_TOKEN, accessToken, accessCookieOption);
+      res.cookie(Cookies.REFRESH_TOKEN, refreshToken, refreshCookieOption);
+
+      return res.send({ user: userResponse });
     } catch (error) {
-      res.clearCookie('refresh');
+      res.clearCookie(Cookies.ACCESS_TOKEN);
+      res.clearCookie(Cookies.REFRESH_TOKEN);
       return next(error);
     }
   };

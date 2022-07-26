@@ -10,6 +10,11 @@ export const refreshCookieOption: CookieOptions = {
   maxAge: TokenExpiration.REFRESH * 1000,
 };
 
+export const accessCookieOption: CookieOptions = {
+  httpOnly: true,
+  maxAge: TokenExpiration.ACCESS * 1000,
+};
+
 export const signAccessToken = (payload: AccessTokenPayload) => {
   const accessTokenSecret = process.env.access_token_private || '';
 
