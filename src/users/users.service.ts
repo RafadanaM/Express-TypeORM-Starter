@@ -1,4 +1,4 @@
-import AppDataSource from '../data-source';
+import AppDataSource from '../db/data-source';
 import Users from './users.entity';
 import { Repository } from 'typeorm';
 import UserDoesNotExist from '../common/exceptions/userDoesNotExist.exception';

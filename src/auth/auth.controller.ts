@@ -1,12 +1,12 @@
 import { NextFunction, Request, Response, Router } from 'express';
 import { RequestTypes } from '../common/enums/request.enum';
 import { Cookies } from '../common/enums/token.enum';
-import BaseController from '../common/interfaces/baseController.interface';
 import validationMiddleware from '../common/middlewares/validation.middleware';
 import { accessCookieOption, refreshCookieOption } from '../common/utils/token.util';
 import { loginDTO, registerDTO } from './auth.dto';
 import { LoginResponse, RegisterResponse } from './auth.response';
 import AuthService from './auth.service';
+import BaseController from '../common/controllers/base.controller';
 
 class AuthController implements BaseController {
   public path: string;

@@ -4,18 +4,18 @@ import cors from 'cors';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import swaggerUi from 'swagger-ui-express';
-import Controller from './src/common/interfaces/baseController.interface';
 import errorMiddleware from './src/common/middlewares/error.middleware';
 import NotFoundMiddleware from './src/common/middlewares/notfound.middleware';
 import httpLogger from './src/common/logger/httpLogger';
 import logger from './src/common/logger/logger';
 import options from './docs/swaggerOption';
+import BaseController from './src/common/controllers/base.controller';
 class App {
   public app: express.Application;
 
   public port: number;
 
-  constructor(controllers: Controller[], port: number) {
+  constructor(controllers: BaseController[], port: number) {
     this.app = express();
     this.port = port;
     this.initMiddlewares();
@@ -38,7 +38,7 @@ class App {
     this.app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(options, { explorer: true }));
   }
 
-  private initControllers(controllers: Controller[]) {
+  private initControllers(controllers: BaseController[]) {
     controllers.forEach((controller) => {
       this.app.use(`/api${controller.path}`, controller.router);
     });

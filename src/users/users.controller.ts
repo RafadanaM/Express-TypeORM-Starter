@@ -1,13 +1,13 @@
 import { Router, Request, Response, NextFunction } from 'express';
-import BaseController from '../common/interfaces/baseController.interface';
 import authMiddleware from '../common/middlewares/auth.middleware';
 import UsersService from './users.service';
 import { Multer } from 'multer';
 import upload from '../common/utils/multer.util';
 import HttpException from '../common/exceptions/http.exception';
-import AuthResponseLocals from '../common/interfaces/authResponseLocal.interface';
 import { UpdatePhotoResponse } from './users.response';
 import Users from './users.entity';
+import BaseController from '../common/controllers/base.controller';
+import AuthResponseLocals from '../common/responses/authLocals.response';
 
 class UsersController implements BaseController {
   public path: string;

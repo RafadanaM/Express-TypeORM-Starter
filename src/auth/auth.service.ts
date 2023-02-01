@@ -1,5 +1,5 @@
 import { Repository } from 'typeorm';
-import AppDataSource from '../data-source';
+import AppDataSource from '../db/data-source';
 import EmailAlreadyExist from '../common/exceptions/emailAlreadyExist.exception';
 import HttpException from '../common/exceptions/http.exception';
 import Users from '../users/users.entity';
