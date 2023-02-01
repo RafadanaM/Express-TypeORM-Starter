@@ -1,5 +1,5 @@
 import { IsEmail, IsISO8601, IsString, Matches, MaxLength, MinLength } from 'class-validator';
-import { Match } from '../../decorator/Match';
+import { Match } from '../common/decorators/Match';
 
 /**
  * @openapi

@@ -1,11 +1,11 @@
 import { Router, Request, Response, NextFunction } from 'express';
-import BaseController from '../../interfaces/baseController.interface';
-import authMiddleware from '../../middlewares/auth.middleware';
+import BaseController from '../common/interfaces/baseController.interface';
+import authMiddleware from '../common/middlewares/auth.middleware';
 import UsersService from './users.service';
 import { Multer } from 'multer';
-import upload from '../../utils/multer.util';
-import HttpException from '../../exceptions/http.exception';
-import AuthResponseLocals from '../../interfaces/authResponseLocal.interface';
+import upload from '../common/utils/multer.util';
+import HttpException from '../common/exceptions/http.exception';
+import AuthResponseLocals from '../common/interfaces/authResponseLocal.interface';
 import { UpdatePhotoResponse } from './users.response';
 import Users from './users.entity';
 

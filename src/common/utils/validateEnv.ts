@@ -9,7 +9,7 @@ function validateEnv() {
     DB_PASSWORD: str(),
     DB_NAME: str(),
     NODE_ENV: str(),
-    origin: str(),
+    ORIGIN: str(),
     access_token_private: str(),
     access_token_public: str(),
     refresh_token_private: str(),

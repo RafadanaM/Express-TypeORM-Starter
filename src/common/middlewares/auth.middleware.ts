@@ -10,8 +10,8 @@ const authMiddleware = async (
   response: Response<Record<string, never>, AuthResponseLocals>,
   next: NextFunction,
 ) => {
-  const cookies = request.cookies
-  if (!cookies || !cookies[Cookies.ACCESS_TOKEN]) return next(new MissingTokenException())
+  const cookies = request.cookies;
+  if (!cookies || !cookies[Cookies.ACCESS_TOKEN]) return next(new MissingTokenException());
   const verificationResponse = verifyAccessToken(cookies[Cookies.ACCESS_TOKEN]);
   if (verificationResponse === null) return next(new invalidTokenException());
   //   https://stackoverflow.com/a/65144765

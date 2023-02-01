@@ -1,7 +1,7 @@
 import Users from '../users/users.entity';
 
 export interface RegisterResponse {
-  message: string
+  message: string;
 }
 
 export interface LoginResponse {

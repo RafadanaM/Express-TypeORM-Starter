@@ -1,15 +1,15 @@
 import { Repository } from 'typeorm';
-import AppDataSource from '../../data-source';
-import EmailAlreadyExist from '../../exceptions/emailAlreadyExist.exception';
-import HttpException from '../../exceptions/http.exception';
+import AppDataSource from '../data-source';
+import EmailAlreadyExist from '../common/exceptions/emailAlreadyExist.exception';
+import HttpException from '../common/exceptions/http.exception';
 import Users from '../users/users.entity';
 import { loginDTO, registerDTO } from './auth.dto';
-import EmailPasswordDoesNotMatch from '../../exceptions/emailPasswordDoesNotMatch.exception';
-import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../../utils/token.util';
-import MissingTokenException from '../../exceptions/missingToken.exception';
-import invalidTokenException from '../../exceptions/InvalidToken.exception';
-import { isQueryFailedError } from '../../utils/db.util';
-import { comparePassword, hashPassword } from '../../utils/hash.util';
+import EmailPasswordDoesNotMatch from '../common/exceptions/emailPasswordDoesNotMatch.exception';
+import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../common/utils/token.util';
+import MissingTokenException from '../common/exceptions/missingToken.exception';
+import invalidTokenException from '../common/exceptions/InvalidToken.exception';
+import { isQueryFailedError } from '../common/utils/db.util';
+import { comparePassword, hashPassword } from '../common/utils/hash.util';
 
 class AuthService {
   usersRepository: Repository<Users>;

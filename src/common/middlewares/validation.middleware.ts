@@ -1,7 +1,8 @@
 import { ClassConstructor, plainToInstance } from 'class-transformer';
 import { validate, ValidationError } from 'class-validator';
 import { NextFunction, Request, Response } from 'express';
-import { RequestTypes } from 'src/enums/request.enum';
+
+import { RequestTypes } from 'src/common/enums/request.enum';
 import HttpException from '../exceptions/http.exception';
 
 const validationMiddleware = <T>(type: ClassConstructor<T>, property: RequestTypes, skipMissingProperties = false) => {
@@ -20,3 +21,5 @@ const validationMiddleware = <T>(type: ClassConstructor<T>, property: RequestTyp
 };
 
 export default validationMiddleware;
+{
+}
