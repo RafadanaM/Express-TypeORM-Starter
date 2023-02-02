@@ -1,13 +1,13 @@
 import { Router, Request, Response, NextFunction } from 'express';
-import authMiddleware from '../common/middlewares/auth.middleware';
-import UsersService from './users.service';
+import authMiddleware from '../../common/middlewares/auth.middleware';
+import UsersService from '../services/users.service';
 import { Multer } from 'multer';
-import upload from '../common/utils/multer.util';
-import HttpException from '../common/exceptions/http.exception';
-import { UpdatePhotoResponse } from './users.response';
-import Users from './users.entity';
-import BaseController from '../common/controllers/base.controller';
-import AuthResponseLocals from '../common/responses/authLocals.response';
+import upload from '../../common/utils/multer.util';
+import HttpException from '../../common/exceptions/http.exception';
+import Users from '../entities/users.entity';
+import BaseController from '../../common/controllers/base.controller';
+import AuthResponseLocals from '../../common/responses/authLocals.response';
+import { UpdatePhotoResponseBody } from '../responses/updatePhoto.response';
 
 class UsersController implements BaseController {
   public path: string;
@@ -55,7 +55,7 @@ class UsersController implements BaseController {
 
   private updateAvatarHandler = async (
     req: Request<Record<string, never>>,
-    res: Response<UpdatePhotoResponse, AuthResponseLocals>,
+    res: Response<UpdatePhotoResponseBody, AuthResponseLocals>,
     next: NextFunction,
   ) => {
     try {

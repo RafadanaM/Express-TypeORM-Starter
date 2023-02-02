@@ -1,12 +1,13 @@
 import { NextFunction, Request, Response, Router } from 'express';
-import { RequestTypes } from '../common/enums/request.enum';
-import { Cookies } from '../common/enums/token.enum';
-import validationMiddleware from '../common/middlewares/validation.middleware';
-import { accessCookieOption, refreshCookieOption } from '../common/utils/token.util';
-import { loginDTO, registerDTO } from './auth.dto';
-import { LoginResponse, RegisterResponse } from './auth.response';
-import AuthService from './auth.service';
-import BaseController from '../common/controllers/base.controller';
+import { RequestTypes } from '../../common/enums/request.enum';
+import { Cookies } from '../../common/enums/token.enum';
+import validationMiddleware from '../../common/middlewares/validation.middleware';
+import { accessCookieOption, refreshCookieOption } from '../../common/utils/token.util';
+import { LoginResponse, RegisterResponse } from '../responses/auth.response';
+import AuthService from '../services/auth.service';
+import BaseController from '../../common/controllers/base.controller';
+import LoginDTO from '../dto/login.dto';
+import RegisterDTO from '../dto/register.dto';
 
 class AuthController implements BaseController {
   public path: string;
@@ -22,12 +23,12 @@ class AuthController implements BaseController {
   private initRoutes() {
     this.router.get('/refresh', this.refreshHandler);
     this.router.get('/logout', this.logoutHandler);
-    this.router.post('/login', validationMiddleware(loginDTO, RequestTypes.BODY), this.loginHandler);
-    this.router.post('/register', validationMiddleware(registerDTO, RequestTypes.BODY), this.registerHandler);
+    this.router.post('/login', validationMiddleware(LoginDTO, RequestTypes.BODY), this.loginHandler);
+    this.router.post('/register', validationMiddleware(RegisterDTO, RequestTypes.BODY), this.registerHandler);
   }
 
   private registerHandler = async (
-    req: Request<Record<string, never>, RegisterResponse, registerDTO>,
+    req: Request<Record<string, never>, RegisterResponse, RegisterDTO>,
     res: Response<RegisterResponse>,
     next: NextFunction,
   ) => {
@@ -41,7 +42,7 @@ class AuthController implements BaseController {
   };
 
   private loginHandler = async (
-    req: Request<Record<string, never>, LoginResponse, loginDTO>,
+    req: Request<Record<string, never>, LoginResponse, LoginDTO>,
     res: Response<LoginResponse>,
     next: NextFunction,
   ) => {

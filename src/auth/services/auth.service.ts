@@ -1,15 +1,16 @@
 import { Repository } from 'typeorm';
-import AppDataSource from '../db/data-source';
-import EmailAlreadyExist from '../common/exceptions/emailAlreadyExist.exception';
-import HttpException from '../common/exceptions/http.exception';
-import Users from '../users/users.entity';
-import { loginDTO, registerDTO } from './auth.dto';
-import EmailPasswordDoesNotMatch from '../common/exceptions/emailPasswordDoesNotMatch.exception';
-import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../common/utils/token.util';
-import MissingTokenException from '../common/exceptions/missingToken.exception';
-import invalidTokenException from '../common/exceptions/InvalidToken.exception';
-import { isQueryFailedError } from '../common/utils/db.util';
-import { comparePassword, hashPassword } from '../common/utils/hash.util';
+import AppDataSource from '../../db/data-source';
+import EmailAlreadyExist from '../../common/exceptions/emailAlreadyExist.exception';
+import HttpException from '../../common/exceptions/http.exception';
+import Users from '../../users/entities/users.entity';
+import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../../common/utils/token.util';
+import MissingTokenException from '../../common/exceptions/missingToken.exception';
+import invalidTokenException from '../../common/exceptions/InvalidToken.exception';
+import { isQueryFailedError } from '../../common/utils/db.util';
+import { comparePassword, hashPassword } from '../../common/utils/hash.util';
+import RegisterDTO from '../dto/register.dto';
+import LoginDTO from '../dto/login.dto';
+import EmailPasswordDoesNotMatch from '../../common/exceptions/emailPasswordDoesNotMatch.exception';
 
 class AuthService {
   usersRepository: Repository<Users>;
@@ -18,7 +19,7 @@ class AuthService {
     this.usersRepository = AppDataSource.getRepository(Users);
   }
 
-  public register = async (userData: registerDTO): Promise<string> => {
+  public register = async (userData: RegisterDTO): Promise<string> => {
     try {
       const hashed_password = await hashPassword(userData.password);
       const newUser = this.usersRepository.create({ ...userData, password: hashed_password });
@@ -35,7 +36,7 @@ class AuthService {
     }
   };
 
-  public login = async (loginData: loginDTO, oldToken: string | undefined) => {
+  public login = async (loginData: LoginDTO, oldToken: string | undefined) => {
     const user = await this.usersRepository
       .createQueryBuilder('users')
       .select(['users.email', 'users.first_name', 'users.last_name', 'users.password', 'users.refresh_tokens'])

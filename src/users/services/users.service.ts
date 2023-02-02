@@ -1,7 +1,7 @@
-import AppDataSource from '../db/data-source';
-import Users from './users.entity';
+import AppDataSource from '../../db/data-source';
+import Users from '../entities/users.entity';
 import { Repository } from 'typeorm';
-import UserDoesNotExist from '../common/exceptions/userDoesNotExist.exception';
+import UserDoesNotExist from '../../common/exceptions/userDoesNotExist.exception';
 
 class UsersService {
   usersRepository: Repository<Users>;

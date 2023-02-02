@@ -1,4 +1,4 @@
-import Users from '../users/users.entity';
+import Users from '../../users/entities/users.entity';
 
 export interface RegisterResponse {
   message: string;
