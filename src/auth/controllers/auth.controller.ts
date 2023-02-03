@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response, Router } from 'express';
+import { NextFunction, Router } from 'express';
 import { RequestTypes } from '../../common/enums/request.enum';
 import { Cookies } from '../../common/enums/token.enum';
 import validationMiddleware from '../../common/middlewares/validation.middleware';
@@ -27,11 +27,15 @@ class AuthController implements BaseController {
   private initRoutes() {
     this.router.get('/refresh', this.refreshHandler);
     this.router.get('/logout', this.logoutHandler);
-    this.router.post('/login', validationMiddleware(LoginDTO, RequestTypes.BODY), this.loginHandler);
-    this.router.post('/register', validationMiddleware(RegisterDTO, RequestTypes.BODY), this.registerHandler);
+    this.router.post('/login', validationMiddleware(LoginDTO, RequestTypes.BODY), this.loginHandler.bind(this));
+    this.router.post(
+      '/register',
+      validationMiddleware(RegisterDTO, RequestTypes.BODY),
+      this.registerHandler.bind(this),
+    );
   }
 
-  private registerHandler = async (req: RegisterRequest, res: BaseResponse, next: NextFunction) => {
+  private async registerHandler(req: RegisterRequest, res: BaseResponse, next: NextFunction) {
     try {
       const body = req.body;
       const message = await this.authService.register(body);
@@ -39,9 +43,9 @@ class AuthController implements BaseController {
     } catch (error) {
       return next(error);
     }
-  };
+  }
 
-  private loginHandler = async (req: LoginRequest, res: LoginResponse, next: NextFunction) => {
+  private async loginHandler(req: LoginRequest, res: LoginResponse, next: NextFunction) {
     try {
       const body = req.body;
       const oldRefreshToken: string | undefined = req.cookies[Cookies.REFRESH_TOKEN];
@@ -55,9 +59,9 @@ class AuthController implements BaseController {
     } catch (error) {
       return next(error);
     }
-  };
+  }
 
-  private logoutHandler = async (req: BaseRequest, res: BaseResponse, next: NextFunction) => {
+  private async logoutHandler(req: BaseRequest, res: BaseResponse, next: NextFunction) {
     try {
       const mRefreshToken: string | undefined = req.cookies[Cookies.REFRESH_TOKEN];
       if (mRefreshToken) {
@@ -69,9 +73,9 @@ class AuthController implements BaseController {
     } catch (error) {
       return next(error);
     }
-  };
+  }
 
-  private refreshHandler = async (req: BaseRequest, res: LoginResponse, next: NextFunction) => {
+  private async refreshHandler(req: BaseRequest, res: LoginResponse, next: NextFunction) {
     try {
       const mRefreshToken: string | undefined = req.cookies[Cookies.REFRESH_TOKEN];
       const { accessToken, refreshToken, userResponse } = await this.authService.refresh(mRefreshToken);
@@ -85,7 +89,7 @@ class AuthController implements BaseController {
       res.clearCookie(Cookies.REFRESH_TOKEN);
       return next(error);
     }
-  };
+  }
 }
 
 export default AuthController;

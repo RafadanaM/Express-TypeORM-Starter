@@ -19,7 +19,7 @@ class AuthService {
     this.usersRepository = AppDataSource.getRepository(Users);
   }
 
-  public register = async (userData: RegisterDTO): Promise<string> => {
+  public async register(userData: RegisterDTO): Promise<string> {
     try {
       const hashed_password = await hashPassword(userData.password);
       const newUser = this.usersRepository.create({ ...userData, password: hashed_password });
@@ -34,12 +34,12 @@ class AuthService {
       }
       throw new HttpException(500, 'Something went wrong');
     }
-  };
+  }
 
-  public login = async (loginData: LoginDTO, oldToken: string | undefined) => {
+  public async login(loginData: LoginDTO, oldToken: string | undefined) {
     const user = await this.usersRepository
       .createQueryBuilder('users')
-      .select(['users.email', 'users.first_name', 'users.last_name', 'users.password', 'users.refresh_tokens'])
+      .select(['users.email', 'users.id', 'users.password', 'users.refresh_tokens'])
       .where('users.email = :email', { email: loginData.email })
       .getOne();
     if (!user) throw new EmailPasswordDoesNotMatch();
@@ -48,11 +48,9 @@ class AuthService {
     if (!isMatch) throw new EmailPasswordDoesNotMatch();
 
     const accessToken = signAccessToken({
-      email: user.email,
-      first_name: user.first_name,
-      last_name: user.last_name,
+      id: user.id,
     });
-    const refreshToken = signRefreshToken({ email: user.email });
+    const refreshToken = signRefreshToken({ id: user.id });
 
     const userResponse: Partial<Users> = {
       email: user.email,
@@ -71,9 +69,9 @@ class AuthService {
       .execute();
 
     return { accessToken, refreshToken, userResponse };
-  };
+  }
 
-  public logout = async (token: string) => {
+  public async logout(token: string) {
     const user = await this.usersRepository
       .createQueryBuilder('users')
       .select(['users.email', 'users.refresh_tokens'])
@@ -90,12 +88,13 @@ class AuthService {
         .execute();
     }
     return;
-  };
+  }
 
-  public refresh = async (token: string | undefined) => {
+  public async refresh(token: string | undefined) {
     if (token === undefined) throw new MissingTokenException();
 
     const refreshTokenResponse = verifyRefreshToken(token);
+
     // if token is invalid/expires
     if (refreshTokenResponse === null) {
       const mUser = await this.usersRepository
@@ -120,7 +119,7 @@ class AuthService {
     const user = await this.usersRepository
       .createQueryBuilder('users')
       .select(['users.email', 'users.first_name', 'users.last_name', 'users.refresh_tokens'])
-      .where('users.email = :email', { email: refreshTokenResponse.email })
+      .where('users.id = :id', { email: refreshTokenResponse.id })
       .getOne();
     if (!user) {
       throw new invalidTokenException();
@@ -135,7 +134,7 @@ class AuthService {
         .createQueryBuilder('users')
         .update()
         .set({ refresh_tokens: [] })
-        .where('users.email = :email', { email: user.email })
+        .where('users.id = :id', { email: user.id })
         .execute();
       throw new invalidTokenException();
     }
@@ -143,11 +142,9 @@ class AuthService {
     // Token does exists on users refresh token, remove the token
     // and add a new refresh token to the list
 
-    const refreshToken = signRefreshToken({ email: user.email });
+    const refreshToken = signRefreshToken({ id: user.id });
     const accessToken = signAccessToken({
-      email: user.email,
-      first_name: user.first_name,
-      last_name: user.last_name,
+      id: user.id,
     });
 
     const userResponse: Partial<Users> = {
@@ -163,6 +160,6 @@ class AuthService {
       .where('users.email = :email', { email: user.email })
       .execute();
     return { accessToken, refreshToken, userResponse };
-  };
+  }
 }
 export default AuthService;

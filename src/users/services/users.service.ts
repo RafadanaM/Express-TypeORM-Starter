@@ -10,11 +10,11 @@ class UsersService {
     this.usersRepository = AppDataSource.getRepository(Users);
   }
 
-  public getUsers = async (): Promise<Users[]> => {
+  public async getUsers(): Promise<Users[]> {
     return await this.usersRepository.find();
-  };
+  }
 
-  public getUserById = async (userId: string): Promise<Users> => {
+  public async getUserById(userId: string): Promise<Users> {
     const user = await this.usersRepository
       .createQueryBuilder('users')
       .where('users.id = :id', { id: userId })
@@ -22,9 +22,9 @@ class UsersService {
     if (!user) throw new UserDoesNotExist();
 
     return user;
-  };
+  }
 
-  public updateAvatar = async (email: string, avatarPath: string): Promise<string> => {
+  public async updateAvatar(email: string, avatarPath: string): Promise<string> {
     await this.usersRepository
       .createQueryBuilder('users')
       .update()
@@ -34,7 +34,7 @@ class UsersService {
       .where('users.email = :email', { email: email })
       .execute();
     return avatarPath;
-  };
+  }
 }
 
 export default UsersService;

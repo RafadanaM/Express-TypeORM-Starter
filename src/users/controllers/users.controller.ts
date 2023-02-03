@@ -20,20 +20,20 @@ class UsersController implements BaseController {
   }
 
   private initRoutes() {
-    this.router.get('', authMiddleware, this.getUsersHandler);
-    this.router.get('/profile', authMiddleware, this.getUserHandler);
+    this.router.get('', authMiddleware, this.getUsersHandler.bind(this));
+    this.router.get('/profile', authMiddleware, this.getUserHandler.bind(this));
   }
 
-  private getUsersHandler = async (_req: BaseRequest, res: UsersResponse, next: NextFunction) => {
+  private async getUsersHandler(_req: BaseRequest, res: UsersResponse, next: NextFunction) {
     try {
       const users = await this.usersService.getUsers();
       return res.send({ statusCode: 200, message: 'users successfully retrieved', users });
     } catch (error) {
       return next(error);
     }
-  };
+  }
 
-  private getUserHandler = async (_req: BaseRequest, res: UserResponse, next: NextFunction) => {
+  private async getUserHandler(_req: BaseRequest, res: UserResponse, next: NextFunction) {
     try {
       const userId = res.locals.userId;
       const user = await this.usersService.getUserById(userId);
@@ -41,7 +41,7 @@ class UsersController implements BaseController {
     } catch (error) {
       return next(error);
     }
-  };
+  }
 
   // private updateAvatarHandler = async (
   //   req: Request<Record<string, never>>,
