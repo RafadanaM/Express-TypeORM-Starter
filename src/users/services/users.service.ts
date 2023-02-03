@@ -14,12 +14,12 @@ class UsersService {
     return await this.usersRepository.find();
   };
 
-  public getUserByEmail = async (email: string): Promise<Users> => {
+  public getUserById = async (userId: string): Promise<Users> => {
     const user = await this.usersRepository
       .createQueryBuilder('users')
-      .where('users.email = :email', { email: email })
+      .where('users.id = :id', { id: userId })
       .getOne();
-    if (!user) throw new UserDoesNotExist(email);
+    if (!user) throw new UserDoesNotExist();
 
     return user;
   };

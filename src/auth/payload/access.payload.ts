@@ -1,7 +1,11 @@
+import { JwtPayload } from 'jsonwebtoken';
+
 interface AccessTokenPayload {
-  email: string;
-  first_name: string;
-  last_name: string;
+  id: string;
 }
 
-export default AccessTokenPayload;
+interface AccessToken extends JwtPayload {
+  id: string;
+}
+
+export { AccessTokenPayload, AccessToken };

@@ -1,5 +1,11 @@
+import { JwtPayload } from 'jsonwebtoken';
+
 interface RefreshTokenPayload {
-  email: string;
+  id: string;
 }
 
-export default RefreshTokenPayload;
+interface RefreshToken extends JwtPayload {
+  id: string;
+}
+
+export { RefreshTokenPayload, RefreshToken };

@@ -1,21 +1,22 @@
-import { AccessToken, AccessTokenPayload, RefreshTokenPayload } from '../interfaces/auth.interface';
 import jwt from 'jsonwebtoken';
 import { TokenExpiration } from '../enums/token.enum';
 import { CookieOptions } from 'express';
+import { AccessToken, AccessTokenPayload } from '../../auth/payload/access.payload';
+import { RefreshToken, RefreshTokenPayload } from '../../auth/payload/refresh.payload';
 
 export const refreshCookieOption: CookieOptions = {
   httpOnly: true,
   // secure: true,
-  // sameSite: 'none',
   maxAge: TokenExpiration.REFRESH * 1000,
 };
 
 export const accessCookieOption: CookieOptions = {
   httpOnly: true,
+  // secure: true,
   maxAge: TokenExpiration.ACCESS * 1000,
 };
 
-export const signAccessToken = (payload: AccessTokenPayload) => {
+export const signAccessToken = (payload: AccessTokenPayload): string => {
   const accessTokenSecret = process.env.access_token_private || '';
 
   return jwt.sign(payload, accessTokenSecret, {
@@ -34,7 +35,7 @@ export const verifyAccessToken = (token: string): AccessToken | null => {
   }
 };
 
-export const signRefreshToken = (payload: RefreshTokenPayload) => {
+export const signRefreshToken = (payload: RefreshTokenPayload): string => {
   const refreshTokenSecret = process.env.refresh_token_private || '';
   return jwt.sign(payload, refreshTokenSecret, {
     expiresIn: TokenExpiration.REFRESH,
@@ -42,11 +43,11 @@ export const signRefreshToken = (payload: RefreshTokenPayload) => {
   });
 };
 
-export const verifyRefreshToken = (token: string): RefreshTokenPayload | null => {
+export const verifyRefreshToken = (token: string): RefreshToken | null => {
   try {
     const refreshTokenSecret = process.env.refresh_token_public || '';
     const decoded = jwt.verify(token, refreshTokenSecret);
-    return decoded as RefreshTokenPayload;
+    return decoded as RefreshToken;
   } catch (error) {
     return null;
   }
