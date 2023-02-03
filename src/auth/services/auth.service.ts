@@ -1,16 +1,14 @@
 import { Repository } from 'typeorm';
 import AppDataSource from '../../db/data-source';
-import EmailAlreadyExist from '../../common/exceptions/emailAlreadyExist.exception';
-import HttpException from '../../common/exceptions/http.exception';
 import Users from '../../users/entities/users.entity';
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../../common/utils/token.util';
-import MissingTokenException from '../../common/exceptions/missingToken.exception';
-import invalidTokenException from '../../common/exceptions/InvalidToken.exception';
 import { isQueryFailedError } from '../../common/utils/db.util';
 import { comparePassword, hashPassword } from '../../common/utils/hash.util';
 import RegisterDTO from '../dto/register.dto';
 import LoginDTO from '../dto/login.dto';
-import EmailPasswordDoesNotMatch from '../../common/exceptions/emailPasswordDoesNotMatch.exception';
+import BadRequestException from '../../common/exceptions/badRequest.exception';
+import InternalServerErrorException from '../../common/exceptions/internalServerError.exception';
+import UnauthorizedException from '../../common/exceptions/unauthorized.exception';
 
 class AuthService {
   usersRepository: Repository<Users>;
@@ -29,10 +27,10 @@ class AuthService {
     } catch (error) {
       if (isQueryFailedError(error)) {
         if (error.code === '23505') {
-          throw new EmailAlreadyExist();
+          throw new BadRequestException('Email already exists');
         }
       }
-      throw new HttpException(500, 'Something went wrong');
+      throw new InternalServerErrorException();
     }
   }
 
@@ -42,10 +40,10 @@ class AuthService {
       .select(['users.email', 'users.id', 'users.password', 'users.refresh_tokens'])
       .where('users.email = :email', { email: loginData.email })
       .getOne();
-    if (!user) throw new EmailPasswordDoesNotMatch();
+    if (!user) throw new BadRequestException('Email or Password does not match');
 
     const isMatch = await comparePassword(loginData.password, user.password);
-    if (!isMatch) throw new EmailPasswordDoesNotMatch();
+    if (!isMatch) throw new BadRequestException('Email or Password does not match');
 
     const accessToken = signAccessToken({
       id: user.id,
@@ -91,7 +89,7 @@ class AuthService {
   }
 
   public async refresh(token: string | undefined) {
-    if (token === undefined) throw new MissingTokenException();
+    if (token === undefined) throw new UnauthorizedException('Token is missing');
 
     const refreshTokenResponse = verifyRefreshToken(token);
 
@@ -113,7 +111,7 @@ class AuthService {
           .execute();
       }
 
-      throw new invalidTokenException();
+      throw new UnauthorizedException('Token is invalid');
     }
     // Token is valid
     const user = await this.usersRepository
@@ -122,7 +120,7 @@ class AuthService {
       .where('users.id = :id', { email: refreshTokenResponse.id })
       .getOne();
     if (!user) {
-      throw new invalidTokenException();
+      throw new UnauthorizedException('Token is invalid');
     }
 
     // if token does not exists on a users refresh_token
@@ -136,7 +134,7 @@ class AuthService {
         .set({ refresh_tokens: [] })
         .where('users.id = :id', { email: user.id })
         .execute();
-      throw new invalidTokenException();
+      throw new UnauthorizedException('Token is invalid');
     }
 
     // Token does exists on users refresh token, remove the token

@@ -1,7 +1,7 @@
+import NotFoundException from '../../common/exceptions/notFound.exception';
 import AppDataSource from '../../db/data-source';
 import Users from '../entities/users.entity';
 import { Repository } from 'typeorm';
-import UserDoesNotExist from '../../common/exceptions/userDoesNotExist.exception';
 
 class UsersService {
   usersRepository: Repository<Users>;
@@ -19,7 +19,7 @@ class UsersService {
       .createQueryBuilder('users')
       .where('users.id = :id', { id: userId })
       .getOne();
-    if (!user) throw new UserDoesNotExist();
+    if (!user) throw new NotFoundException('User does not exists');
 
     return user;
   }
