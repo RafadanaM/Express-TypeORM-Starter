@@ -30,10 +30,20 @@ class Users {
   @UpdateDateColumn()
   public updated!: Date;
 
+  /**
+   * select properties of an Users by its keys
+   * @param {U extends keyof Users} keys keys of Users
+   * @returns {Pick<Users, U>} Users with only the selected properties
+   */
   public select<U extends keyof Users>(...keys: U[]): Pick<Users, U> {
     return select(this, ...keys);
   }
 
+  /**
+   * remove properties of an Users by its keys
+   * @param {U extends keyof Users} keys keys of Users
+   * @returns {Omit<Users, U>} Users without the removed properties
+   */
   public remove<U extends keyof Users>(...keys: U[]): Omit<Users, U> {
     return remove(this, ...keys);
   }

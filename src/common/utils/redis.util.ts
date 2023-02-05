@@ -1,5 +1,10 @@
 import redisClient from '../config/redis';
 
+/**
+ * delete values on redis based on key pattern
+ * @param {string} pattern key pattern
+ * @returns {void}
+ */
 async function deleteScan(pattern: string): Promise<void> {
   let cursor = 0;
 

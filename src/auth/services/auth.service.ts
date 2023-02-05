@@ -96,7 +96,6 @@ class AuthService {
     3. generate new access & refresh token
     4. add newly created refresh token to redis with format {ID}_Refresh_{Token}
     5. return to user
-
     */
 
     if (token === undefined) throw new UnauthorizedException('Token is missing');

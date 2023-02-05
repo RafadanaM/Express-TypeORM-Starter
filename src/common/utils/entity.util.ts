@@ -16,10 +16,22 @@
 
 */
 
+/**
+ * select properties of an Object by its keys
+ * @param {T} obj Object to select properties from
+ * @param {U extends keyof T} keys keys of the given Object
+ * @returns {Pick<T, U>} Object with only the selected properties
+ */
 function select<T extends object, U extends keyof T>(obj: T, ...keys: U[]): Pick<T, U> {
   return keys.reduce((acc, curr) => ({ ...acc, [curr]: obj[curr] }), {} as Pick<T, U>);
 }
 
+/**
+ * remove properties of an Object by its keys
+ * @param {T} obj Object to remove properties from
+ * @param {U extends keyof T} keys keys of the given Object
+ * @returns {Omit<T, U>} Object without the removed properties
+ */
 function remove<T extends object, U extends keyof T>(obj: T, ...keys: U[]): Omit<T, U> {
   const keysSet = new Set(keys);
 
