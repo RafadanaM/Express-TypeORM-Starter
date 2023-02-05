@@ -10,6 +10,8 @@ function validateEnv() {
     DB_NAME: str(),
     NODE_ENV: str(),
     ORIGIN: str(),
+    EMAIL: str(),
+    EMAIL_PASSWORD: str(),
     access_token_private: str(),
     access_token_public: str(),
     refresh_token_private: str(),

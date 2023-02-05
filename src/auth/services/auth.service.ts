@@ -1,7 +1,12 @@
 import { Repository } from 'typeorm';
 import AppDataSource from '../../db/data-source';
 import Users from '../../users/entities/users.entity';
-import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../../common/utils/token.util';
+import {
+  signAccessToken,
+  signRefreshToken,
+  signRequestPasswordResetToken,
+  verifyRefreshToken,
+} from '../../common/utils/token.util';
 import { isQueryFailedError } from '../../common/utils/db.util';
 import { comparePassword, hashPassword } from '../../common/utils/hash.util';
 import RegisterDTO from '../dto/register.dto';
@@ -13,6 +18,8 @@ import redisClient from '../../common/config/redis';
 import { TokenExpiration } from '../../common/enums/token.enum';
 import LoginServiceResponse from '../responses/loginService.response';
 import RefreshServiceResponse from '../responses/refreshService.response';
+import { sendRequestResetPasswordMail } from '../../common/utils/mail.util';
+import { deleteScan } from '../../common/utils/redis.util';
 
 class AuthService {
   usersRepository: Repository<Users>;
@@ -112,6 +119,23 @@ class AuthService {
     );
 
     return { accessToken, refreshToken };
+  }
+
+  public async requestResetPassword(email: string) {
+    const user = await this.usersRepository
+      .createQueryBuilder('users')
+      .select(['users.email', 'users.id'])
+      .where('users.email = :email', { email })
+      .getOne();
+
+    if (user) {
+      const token = await signRequestPasswordResetToken(user.email);
+      const baseKey = `${user.id}_password_`;
+      await deleteScan(baseKey + '*');
+      await redisClient.setEx(`${baseKey}_${token}`, TokenExpiration.PASSWORD_RESET, token);
+      const url = `http://localhost:3000/password-reset?token=${token}`;
+      await sendRequestResetPasswordMail(user.email, url);
+    }
   }
 }
 export default AuthService;

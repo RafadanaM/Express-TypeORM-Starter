@@ -3,6 +3,7 @@ import { TokenExpiration } from '../enums/token.enum';
 import { CookieOptions } from 'express';
 import { AccessToken, AccessTokenPayload } from '../../auth/payload/access.payload';
 import { RefreshToken, RefreshTokenPayload } from '../../auth/payload/refresh.payload';
+import { genSalt } from './hash.util';
 
 export const refreshCookieOption: CookieOptions = {
   httpOnly: true,
@@ -52,4 +53,9 @@ export const verifyRefreshToken = (token: string): RefreshToken | null => {
   } catch (error) {
     return null;
   }
+};
+
+export const signRequestPasswordResetToken = async (email: string): Promise<string> => {
+  const salt = await genSalt();
+  return jwt.sign(email, salt);
 };

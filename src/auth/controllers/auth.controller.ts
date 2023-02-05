@@ -12,6 +12,8 @@ import { BaseResponse } from '../../common/responses/base.response';
 import { LoginResponse } from '../responses/login.response';
 import LoginRequest from '../requests/login.request';
 import BaseRequest from '../../common/requests/base.request';
+import ResetPasswordDTO from '../dto/resetPasswordRequest.dto';
+import RequestPasswordResetRequest from '../requests/resetPasswordRequest.request';
 
 class AuthController implements BaseController {
   public path: string;
@@ -26,6 +28,11 @@ class AuthController implements BaseController {
   }
   private initRoutes() {
     this.router.get('/refresh', this.refreshHandler.bind(this));
+    this.router.post(
+      '/reset-password/request',
+      validationMiddleware(ResetPasswordDTO, RequestTypes.BODY),
+      this.requestResetPasswordHandler.bind(this),
+    );
     this.router.get('/logout', this.logoutHandler.bind(this));
     this.router.post('/login', validationMiddleware(LoginDTO, RequestTypes.BODY), this.loginHandler.bind(this));
     this.router.post(
@@ -85,6 +92,17 @@ class AuthController implements BaseController {
     } catch (error) {
       res.clearCookie(Cookies.ACCESS_TOKEN);
       res.clearCookie(Cookies.REFRESH_TOKEN);
+      return next(error);
+    }
+  }
+
+  private async requestResetPasswordHandler(req: RequestPasswordResetRequest, res: BaseResponse, next: NextFunction) {
+    try {
+      const { email } = req.body;
+
+      await this.authService.requestResetPassword(email);
+      return res.send({ statusCode: 200, message: 'mantap' });
+    } catch (error) {
       return next(error);
     }
   }
