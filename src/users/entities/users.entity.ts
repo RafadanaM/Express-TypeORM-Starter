@@ -1,4 +1,5 @@
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { remove, select } from '../../common/utils/entity.util';
 
 @Entity()
 class Users {
@@ -20,9 +21,6 @@ class Users {
   @Column()
   public birth_date!: Date;
 
-  @Column('text', { select: false, array: true, default: () => 'array[]::text[]' })
-  public refresh_tokens!: string[];
-
   @Column({ nullable: true, default: null })
   public avatar!: string;
 
@@ -31,6 +29,14 @@ class Users {
 
   @UpdateDateColumn()
   public updated!: Date;
+
+  public select<U extends keyof Users>(...keys: U[]): Pick<Users, U> {
+    return select(this, ...keys);
+  }
+
+  public remove<U extends keyof Users>(...keys: U[]): Omit<Users, U> {
+    return remove(this, ...keys);
+  }
 }
 
 export default Users;

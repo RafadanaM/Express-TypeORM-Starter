@@ -7,6 +7,7 @@ import { RefreshToken, RefreshTokenPayload } from '../../auth/payload/refresh.pa
 export const refreshCookieOption: CookieOptions = {
   httpOnly: true,
   // secure: true,
+  path: '/api/auth',
   maxAge: TokenExpiration.REFRESH * 1000,
 };
 

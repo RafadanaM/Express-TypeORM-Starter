@@ -37,7 +37,7 @@
     "pino": "^8.1.0",
     "pino-http": "^8.1.0",
     "pino-pretty": "^8.1.0",
-    "redis": "^4.1.0",
+    "redis": "^4.6.4",
     "reflect-metadata": "^0.1.13",
     "swagger-jsdoc": "^6.2.1",
     "swagger-ui-express": "^4.4.0",

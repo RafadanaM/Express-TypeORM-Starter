@@ -10,6 +10,7 @@ import httpLogger from './src/common/logger/httpLogger';
 import logger from './src/common/logger/logger';
 import options from './docs/swaggerOption';
 import BaseController from './src/common/controllers/base.controller';
+import redisClient from './src/common/config/redis';
 class App {
   public app: express.Application;
 
@@ -18,6 +19,7 @@ class App {
   constructor(controllers: BaseController[], port: number) {
     this.app = express();
     this.port = port;
+    this.initRedis();
     this.initMiddlewares();
     this.initControllers(controllers);
     this.initErrorHandling();
@@ -50,6 +52,10 @@ class App {
 
   private initRouteNotFound() {
     this.app.use(NotFoundMiddleware);
+  }
+
+  private async initRedis() {
+    await redisClient.connect();
   }
 
   private initUnhandledRejection() {

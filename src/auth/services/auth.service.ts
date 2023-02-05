@@ -9,6 +9,10 @@ import LoginDTO from '../dto/login.dto';
 import BadRequestException from '../../common/exceptions/badRequest.exception';
 import InternalServerErrorException from '../../common/exceptions/internalServerError.exception';
 import UnauthorizedException from '../../common/exceptions/unauthorized.exception';
+import redisClient from '../../common/config/redis';
+import { TokenExpiration } from '../../common/enums/token.enum';
+import LoginServiceResponse from '../responses/loginService.response';
+import RefreshServiceResponse from '../responses/refreshService.response';
 
 class AuthService {
   usersRepository: Repository<Users>;
@@ -17,10 +21,10 @@ class AuthService {
     this.usersRepository = AppDataSource.getRepository(Users);
   }
 
-  public async register(userData: RegisterDTO): Promise<string> {
+  public async register(registerData: RegisterDTO): Promise<string> {
     try {
-      const hashed_password = await hashPassword(userData.password);
-      const newUser = this.usersRepository.create({ ...userData, password: hashed_password });
+      const hashed_password = await hashPassword(registerData.password);
+      const newUser = this.usersRepository.create({ ...registerData, password: hashed_password });
       await this.usersRepository.save(newUser);
       const message = 'User created!';
       return message;
@@ -34,12 +38,18 @@ class AuthService {
     }
   }
 
-  public async login(loginData: LoginDTO, oldToken: string | undefined) {
+  public async login(loginData: LoginDTO, mRefreshToken: string | undefined): Promise<LoginServiceResponse> {
+    if (mRefreshToken) {
+      const decoded = verifyRefreshToken(mRefreshToken);
+      if (decoded) throw new UnauthorizedException('You already logged in');
+    }
+
     const user = await this.usersRepository
       .createQueryBuilder('users')
-      .select(['users.email', 'users.id', 'users.password', 'users.refresh_tokens'])
+      .select(['users.email', 'users.id', 'users.password', 'users.first_name', 'users.last_name'])
       .where('users.email = :email', { email: loginData.email })
       .getOne();
+
     if (!user) throw new BadRequestException('Email or Password does not match');
 
     const isMatch = await comparePassword(loginData.password, user.password);
@@ -50,114 +60,58 @@ class AuthService {
     });
     const refreshToken = signRefreshToken({ id: user.id });
 
-    const userResponse: Partial<Users> = {
-      email: user.email,
-      first_name: user.first_name,
-      last_name: user.last_name,
-    };
+    const userResponse = user.select('email', 'first_name', 'last_name');
 
-    // If there's an old token in cookie when loggin in, then remove that token from list
-    const newRefreshTokens =
-      oldToken === undefined ? user.refresh_tokens : user.refresh_tokens.filter((rt) => rt !== oldToken);
-    await this.usersRepository
-      .createQueryBuilder('users')
-      .update()
-      .set({ refresh_tokens: [...newRefreshTokens, refreshToken] })
-      .where('users.email = :email', { email: user.email })
-      .execute();
+    await redisClient.setEx(`${user.id}_refresh_${refreshToken}`, TokenExpiration.REFRESH, refreshToken);
 
     return { accessToken, refreshToken, userResponse };
   }
 
-  public async logout(token: string) {
-    const user = await this.usersRepository
-      .createQueryBuilder('users')
-      .select(['users.email', 'users.refresh_tokens'])
-      .where(':token = ANY (users.refresh_tokens)', { token: token })
-      .getOne();
+  public async logout(refresh_token: string): Promise<void> {
+    /*
+    1. Remove refresh token from redis 
+    2. clear the user's cookie
+    */
 
-    if (user) {
-      const filteredRefreshTokens = user.refresh_tokens.filter((rt) => rt !== token);
-      await this.usersRepository
-        .createQueryBuilder('users')
-        .update()
-        .set({ refresh_tokens: [...filteredRefreshTokens] })
-        .where('users.email = :email', { email: user.email })
-        .execute();
+    const tokenData = verifyRefreshToken(refresh_token);
+    if (tokenData) {
+      await redisClient.del(`${tokenData.id}_refresh_${refresh_token}`);
     }
+
     return;
   }
 
-  public async refresh(token: string | undefined) {
+  public async refresh(token: string | undefined): Promise<RefreshServiceResponse> {
+    /*
+    Use Redis Whitelist (Honestly if not sure if I should use blacklist or whitelist)
+    1. verify current refresh token, reject if invalid, otherwise continue
+    2. check current refresh token from redis, if it exist remove it then continue
+    3. generate new access & refresh token
+    4. add newly created refresh token to redis with format {ID}_Refresh_{Token}
+    5. return to user
+
+    */
+
     if (token === undefined) throw new UnauthorizedException('Token is missing');
 
     const refreshTokenResponse = verifyRefreshToken(token);
 
-    // if token is invalid/expires
-    if (refreshTokenResponse === null) {
-      const mUser = await this.usersRepository
-        .createQueryBuilder('users')
-        .select(['users.email , users.refresh_tokens'])
-        .where(':token = ANY (users.refresh_tokens)', { token: token })
-        .getOne();
+    if (refreshTokenResponse === null) throw new UnauthorizedException('Invalid Token');
 
-      // if user with the expired/invalid token exist, then remove the token
-      if (mUser) {
-        await this.usersRepository
-          .createQueryBuilder('users')
-          .update()
-          .set({ refresh_tokens: [...mUser.refresh_tokens.filter((rt) => rt !== token)] })
-          .where('users.email = :email', { email: mUser.email })
-          .execute();
-      }
+    await redisClient.del(`${refreshTokenResponse.id}_refresh_${token}`);
 
-      throw new UnauthorizedException('Token is invalid');
-    }
-    // Token is valid
-    const user = await this.usersRepository
-      .createQueryBuilder('users')
-      .select(['users.email', 'users.first_name', 'users.last_name', 'users.refresh_tokens'])
-      .where('users.id = :id', { email: refreshTokenResponse.id })
-      .getOne();
-    if (!user) {
-      throw new UnauthorizedException('Token is invalid');
-    }
-
-    // if token does not exists on a users refresh_token
-    const userRefreshTokenIndex = user.refresh_tokens.indexOf(token);
-    if (userRefreshTokenIndex === -1) {
-      // Then it is token re-use, empty the users refresh_token
-      user.refresh_tokens = [];
-      await this.usersRepository
-        .createQueryBuilder('users')
-        .update()
-        .set({ refresh_tokens: [] })
-        .where('users.id = :id', { email: user.id })
-        .execute();
-      throw new UnauthorizedException('Token is invalid');
-    }
-
-    // Token does exists on users refresh token, remove the token
-    // and add a new refresh token to the list
-
-    const refreshToken = signRefreshToken({ id: user.id });
+    const refreshToken = signRefreshToken({ id: refreshTokenResponse.id });
     const accessToken = signAccessToken({
-      id: user.id,
+      id: refreshTokenResponse.id,
     });
 
-    const userResponse: Partial<Users> = {
-      email: user.email,
-      first_name: user.first_name,
-      last_name: user.last_name,
-    };
+    await redisClient.setEx(
+      `${refreshTokenResponse.id}_refresh_${refreshToken}`,
+      TokenExpiration.REFRESH,
+      refreshToken,
+    );
 
-    await this.usersRepository
-      .createQueryBuilder('users')
-      .update()
-      .set({ refresh_tokens: [...user.refresh_tokens.filter((x) => x !== token), refreshToken] })
-      .where('users.email = :email', { email: user.email })
-      .execute();
-    return { accessToken, refreshToken, userResponse };
+    return { accessToken, refreshToken };
   }
 }
 export default AuthService;

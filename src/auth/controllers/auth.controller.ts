@@ -25,8 +25,8 @@ class AuthController implements BaseController {
     this.initRoutes();
   }
   private initRoutes() {
-    this.router.get('/refresh', this.refreshHandler);
-    this.router.get('/logout', this.logoutHandler);
+    this.router.get('/refresh', this.refreshHandler.bind(this));
+    this.router.get('/logout', this.logoutHandler.bind(this));
     this.router.post('/login', validationMiddleware(LoginDTO, RequestTypes.BODY), this.loginHandler.bind(this));
     this.router.post(
       '/register',
@@ -48,11 +48,9 @@ class AuthController implements BaseController {
   private async loginHandler(req: LoginRequest, res: LoginResponse, next: NextFunction) {
     try {
       const body = req.body;
-      const oldRefreshToken: string | undefined = req.cookies[Cookies.REFRESH_TOKEN];
-      if (oldRefreshToken === undefined) {
-        res.clearCookie('refresh');
-      }
-      const { accessToken, refreshToken, userResponse } = await this.authService.login(body, oldRefreshToken);
+      const mRefreshToken: string | undefined = req.cookies[Cookies.REFRESH_TOKEN];
+
+      const { accessToken, refreshToken, userResponse } = await this.authService.login(body, mRefreshToken);
       res.cookie(Cookies.ACCESS_TOKEN, accessToken, accessCookieOption);
       res.cookie(Cookies.REFRESH_TOKEN, refreshToken, refreshCookieOption);
       return res.send({ statusCode: 200, message: 'successfully logged in', user: userResponse });
@@ -75,15 +73,15 @@ class AuthController implements BaseController {
     }
   }
 
-  private async refreshHandler(req: BaseRequest, res: LoginResponse, next: NextFunction) {
+  private async refreshHandler(req: BaseRequest, res: BaseResponse, next: NextFunction) {
     try {
       const mRefreshToken: string | undefined = req.cookies[Cookies.REFRESH_TOKEN];
-      const { accessToken, refreshToken, userResponse } = await this.authService.refresh(mRefreshToken);
+      const { accessToken, refreshToken } = await this.authService.refresh(mRefreshToken);
 
       res.cookie(Cookies.ACCESS_TOKEN, accessToken, accessCookieOption);
       res.cookie(Cookies.REFRESH_TOKEN, refreshToken, refreshCookieOption);
 
-      return res.send({ statusCode: 200, message: 'token refreshed', user: userResponse });
+      return res.send({ statusCode: 200, message: 'token refreshed' });
     } catch (error) {
       res.clearCookie(Cookies.ACCESS_TOKEN);
       res.clearCookie(Cookies.REFRESH_TOKEN);
