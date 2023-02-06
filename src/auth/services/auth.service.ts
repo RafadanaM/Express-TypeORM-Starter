@@ -32,30 +32,12 @@ class AuthService {
     this.usersRepository = AppDataSource.getRepository(Users);
   }
 
-  /**
-   * generate request url for account verification and password reset
-   * @param {"verify" | "password-reset"} type
-   * @param {string} token token to set as search param
-   * @param {string} userId userId to set as search param
-   * @returns
-   */
-  private generateRequestURL(type: 'verify' | 'password-reset', token: string, userId: string): URL {
-    const path = `/${type}`;
-
-    const url = new URL(`https://localhost:3000${path}`);
-    url.searchParams.set('token', token);
-    url.searchParams.set('id', userId);
-
-    return url;
-  }
-
   public async register(registerData: RegisterDTO): Promise<string> {
     try {
       const hashed_password = await hashPassword(registerData.password);
       const newUser = this.usersRepository.create({ ...registerData, password: hashed_password });
       await this.usersRepository.save(newUser);
-      const message = 'User created!';
-      return message;
+      return 'User created!';
     } catch (error) {
       if (isQueryFailedError(error)) {
         if (error.code === '23505') {
@@ -83,29 +65,24 @@ class AuthService {
     const isMatch = await comparePassword(loginData.password, user.password);
     if (!isMatch) throw new BadRequestException('Email or Password does not match');
 
-    const accessToken = signAccessToken({
-      id: user.id,
-    });
+    const accessToken = signAccessToken({ id: user.id });
     const refreshToken = signRefreshToken({ id: user.id });
 
     const userResponse = user.select('email', 'first_name', 'last_name');
-
-    await redisClient.setEx(`${user.id}_refresh_${refreshToken}`, TokenExpiration.REFRESH, refreshToken);
+    await redisClient.setEx(
+      this.generateRedisKey('refresh', user.id, refreshToken),
+      TokenExpiration.REFRESH,
+      refreshToken,
+    );
 
     return { accessToken, refreshToken, userResponse };
   }
 
   public async logout(refresh_token: string): Promise<void> {
-    /*
-    1. Remove refresh token from redis 
-    2. clear the user's cookie
-    */
-
     const tokenData = verifyRefreshToken(refresh_token);
     if (tokenData) {
-      await redisClient.del(`${tokenData.id}_refresh_${refresh_token}`);
+      await redisClient.del(this.generateRedisKey('refresh', tokenData.id, refresh_token));
     }
-
     return;
   }
 
@@ -125,15 +102,13 @@ class AuthService {
 
     if (refreshTokenResponse === null) throw new UnauthorizedException('Invalid Token');
 
-    await redisClient.del(`${refreshTokenResponse.id}_refresh_${token}`);
+    await redisClient.del(this.generateRedisKey('refresh', refreshTokenResponse.id, token));
 
     const refreshToken = signRefreshToken({ id: refreshTokenResponse.id });
-    const accessToken = signAccessToken({
-      id: refreshTokenResponse.id,
-    });
+    const accessToken = signAccessToken({ id: refreshTokenResponse.id });
 
     await redisClient.setEx(
-      `${refreshTokenResponse.id}_refresh_${refreshToken}`,
+      this.generateRedisKey('refresh', refreshTokenResponse.id, refreshToken),
       TokenExpiration.REFRESH,
       refreshToken,
     );
@@ -150,15 +125,15 @@ class AuthService {
 
     if (user) {
       const { token, key } = await signRequestToken({ id: user.id });
-      const baseKey = `${user.id}_password_`;
-      await deleteScan(baseKey + '*');
 
-      await redisClient.setEx(`${baseKey}${token}`, TokenExpiration.REQUEST, key);
+      await deleteScan(`${user.id}_password-reset_*`);
+      await redisClient.setEx(this.generateRedisKey('password-reset', user.id, token), TokenExpiration.REQUEST, key);
+
       const url = this.generateRequestURL('password-reset', token, user.id);
       await sendRequestResetPasswordMail(user.email, url.toString());
     }
   }
-  public async resetPassword(data: ResetPasswordDTO): Promise<string> {
+  public async resetPassword({ id, token, password }: ResetPasswordDTO): Promise<string> {
     /*
     Check if token is in whitelist, if not in whitelist reject
     verify token received, reject if error
@@ -168,14 +143,12 @@ class AuthService {
     delete all refresh token of the user on the whitelist
     delete the user's request password reset token on whitelist
     */
-    const { id, token, password } = data;
 
-    const key = await redisClient.get(`${id}_password_${token}`);
+    const key = await redisClient.get(this.generateRedisKey('password-reset', id, token));
     if (key === null)
       throw new UnauthorizedException('your link has expired, please request a new password reset link');
 
     const decoded = verifyRequestToken(token, key);
-
     if (decoded === null)
       throw new UnauthorizedException('your link is invalid, please request a new password reset link');
 
@@ -192,7 +165,7 @@ class AuthService {
       .execute();
 
     await deleteScan(`${user.id}_refresh_*`);
-    await redisClient.del(`${user.id}_password_${token}`);
+    await redisClient.del(this.generateRedisKey('password-reset', user.id, token));
 
     return 'password has been succesfully changed';
   }
@@ -216,6 +189,34 @@ class AuthService {
     change verification status of the user to verified
     remove the token from the whitelist
     */
+  }
+
+  /**
+   * format key for redis whitelist
+   * @param {"verify" | "refresh" | "password-reset"} type type of key
+   * @param {string} userId user id
+   * @param {string} token token
+   * @returns {string} formatted key
+   */
+  private generateRedisKey(type: 'verify' | 'refresh' | 'password-reset', userId: string, token: string): string {
+    return `${userId}_${type}_${token}`;
+  }
+
+  /**
+   * generate request url for account verification and password reset
+   * @param {"verify" | "password-reset"} type
+   * @param {string} token token to set as search param
+   * @param {string} userId userId to set as search param
+   * @returns
+   */
+  private generateRequestURL(type: 'verify' | 'password-reset', token: string, userId: string): URL {
+    const path = `/${type}`;
+
+    const url = new URL(`https://localhost:3000${path}`);
+    url.searchParams.set('token', token);
+    url.searchParams.set('id', userId);
+
+    return url;
   }
 }
 export default AuthService;
