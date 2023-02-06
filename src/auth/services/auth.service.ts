@@ -4,9 +4,9 @@ import Users from '../../users/entities/users.entity';
 import {
   signAccessToken,
   signRefreshToken,
-  signRequestPasswordResetToken,
+  signRequestToken,
   verifyRefreshToken,
-  verifyRequestPasswordResetToken,
+  verifyRequestToken,
 } from '../../common/utils/token.util';
 import { isQueryFailedError } from '../../common/utils/db.util';
 import { comparePassword, hashPassword } from '../../common/utils/hash.util';
@@ -30,6 +30,23 @@ class AuthService {
 
   constructor() {
     this.usersRepository = AppDataSource.getRepository(Users);
+  }
+
+  /**
+   * generate request url for account verification and password reset
+   * @param {"verify" | "password-reset"} type
+   * @param {string} token token to set as search param
+   * @param {string} userId userId to set as search param
+   * @returns
+   */
+  private generateRequestURL(type: 'verify' | 'password-reset', token: string, userId: string): URL {
+    const path = `/${type}`;
+
+    const url = new URL(`https://localhost:3000${path}`);
+    url.searchParams.set('token', token);
+    url.searchParams.set('id', userId);
+
+    return url;
   }
 
   public async register(registerData: RegisterDTO): Promise<string> {
@@ -132,12 +149,13 @@ class AuthService {
       .getOne();
 
     if (user) {
-      const { token, key } = await signRequestPasswordResetToken({ id: user.id });
+      const { token, key } = await signRequestToken({ id: user.id });
       const baseKey = `${user.id}_password_`;
       await deleteScan(baseKey + '*');
-      await redisClient.setEx(`${baseKey}${token}`, TokenExpiration.PASSWORD_RESET, key);
-      const url = `http://localhost:3000/password-reset?token=${token}&id=${user.id}`;
-      await sendRequestResetPasswordMail(user.email, url);
+
+      await redisClient.setEx(`${baseKey}${token}`, TokenExpiration.REQUEST, key);
+      const url = this.generateRequestURL('password-reset', token, user.id);
+      await sendRequestResetPasswordMail(user.email, url.toString());
     }
   }
   public async resetPassword(data: ResetPasswordDTO): Promise<string> {
@@ -156,7 +174,7 @@ class AuthService {
     if (key === null)
       throw new UnauthorizedException('your link has expired, please request a new password reset link');
 
-    const decoded = verifyRequestPasswordResetToken(token, key);
+    const decoded = verifyRequestToken(token, key);
 
     if (decoded === null)
       throw new UnauthorizedException('your link is invalid, please request a new password reset link');
@@ -177,6 +195,27 @@ class AuthService {
     await redisClient.del(`${user.id}_password_${token}`);
 
     return 'password has been succesfully changed';
+  }
+
+  public async requestVerification() {
+    /*
+    Check if user exists by email, reject if not found
+    delete all verification request token for the user
+    generate new verification token for the user
+    add the token to the whitelist
+    generate url for the user with params of userId and verify token
+    send an email to the user with the url
+    */
+  }
+
+  public async verifyUser() {
+    /*
+    check token in whitelist to get the token and key, reject if not found
+    verify token, reject if error
+    check if user exists, reject if not found
+    change verification status of the user to verified
+    remove the token from the whitelist
+    */
   }
 }
 export default AuthService;

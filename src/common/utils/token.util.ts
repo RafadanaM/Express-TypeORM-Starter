@@ -4,10 +4,7 @@ import { CookieOptions } from 'express';
 import { AccessToken, AccessTokenPayload } from '../../auth/payload/access.payload';
 import { RefreshToken, RefreshTokenPayload } from '../../auth/payload/refresh.payload';
 import { genSalt } from './hash.util';
-import {
-  RequestPasswordResetToken,
-  RequestPasswordResetTokenPayload,
-} from '../../auth/payload/requestPasswordReset.payload';
+import { RequestToken, RequestTokenPayload } from '../../auth/payload/requestPasswordReset.payload';
 
 export const refreshCookieOption: CookieOptions = {
   httpOnly: true,
@@ -81,10 +78,10 @@ export const verifyRefreshToken = (token: string): RefreshToken | null => {
 
 /**
  * Create JWT token for password reset
- * @param {RequestPasswordResetTokenPayload} email payload of the token
+ * @param {RequestTokenPayload} payload payload of the token
  * @returns  JWT token and salt pai
  */
-export const signRequestPasswordResetToken = async (payload: RequestPasswordResetTokenPayload) => {
+export const signRequestToken = async (payload: RequestTokenPayload) => {
   const key = await genSalt();
   const token = jwt.sign(payload, key);
   return { token, key };
@@ -96,10 +93,10 @@ export const signRequestPasswordResetToken = async (payload: RequestPasswordRese
  * @param {string} key key used to verify the token
  * @returns decoded token
  */
-export const verifyRequestPasswordResetToken = (token: string, key: string): RequestPasswordResetToken | null => {
+export const verifyRequestToken = (token: string, key: string): RequestToken | null => {
   try {
     const decoded = jwt.verify(token, key);
-    return decoded as RequestPasswordResetToken;
+    return decoded as RequestToken;
   } catch (error) {
     return null;
   }

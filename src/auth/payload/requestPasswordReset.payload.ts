@@ -1,11 +1,11 @@
 import { JwtPayload } from 'jsonwebtoken';
 
-interface RequestPasswordResetTokenPayload {
+interface RequestTokenPayload {
   id: string;
 }
 
-interface RequestPasswordResetToken extends JwtPayload {
+interface RequestToken extends JwtPayload {
   id: string;
 }
 
-export { RequestPasswordResetToken, RequestPasswordResetTokenPayload };
+export { RequestToken, RequestTokenPayload };

@@ -30,7 +30,7 @@ async function sendMail(htmlPath: fs.FileHandle | string | Buffer | URL, context
 }
 
 /**
- *
+ * Send password reset email request
  * @param {string} to email recipient
  * @param {string} resetURL URL to reset user's password
  */
@@ -45,4 +45,20 @@ async function sendRequestResetPasswordMail(to: string, resetURL: string) {
   );
 }
 
-export { sendMail, sendRequestResetPasswordMail };
+/**
+ * Send verification email request
+ * @param {string} to email recipient
+ * @param {string} verificationURL URL to verify user's account
+ */
+async function sendVerificationMail(to: string, verificationURL: string) {
+  await sendMail(
+    `${__dirname}/../mails/email_verification.html`,
+    { url: verificationURL },
+    {
+      to,
+      subject: 'Account Verification',
+    },
+  );
+}
+
+export { sendMail, sendRequestResetPasswordMail, sendVerificationMail };
