@@ -12,8 +12,10 @@ import { BaseResponse } from '../../common/responses/base.response';
 import { LoginResponse } from '../responses/login.response';
 import LoginRequest from '../requests/login.request';
 import BaseRequest from '../../common/requests/base.request';
-import ResetPasswordDTO from '../dto/resetPasswordRequest.dto';
 import RequestPasswordResetRequest from '../requests/resetPasswordRequest.request';
+import ResetPasswordRequestDTO from '../dto/resetPasswordRequest.dto';
+import PasswordResetRequest from '../requests/resetPassword.request';
+import ResetPasswordDTO from '../dto/resetPassword.dto';
 
 class AuthController implements BaseController {
   public path: string;
@@ -30,8 +32,13 @@ class AuthController implements BaseController {
     this.router.get('/refresh', this.refreshHandler.bind(this));
     this.router.post(
       '/reset-password/request',
-      validationMiddleware(ResetPasswordDTO, RequestTypes.BODY),
+      validationMiddleware(ResetPasswordRequestDTO, RequestTypes.BODY),
       this.requestResetPasswordHandler.bind(this),
+    );
+    this.router.patch(
+      '/reset-password',
+      validationMiddleware(ResetPasswordDTO, RequestTypes.BODY),
+      this.resetPasswordHandler.bind(this),
     );
     this.router.get('/logout', this.logoutHandler.bind(this));
     this.router.post('/login', validationMiddleware(LoginDTO, RequestTypes.BODY), this.loginHandler.bind(this));
@@ -98,10 +105,22 @@ class AuthController implements BaseController {
 
   private async requestResetPasswordHandler(req: RequestPasswordResetRequest, res: BaseResponse, next: NextFunction) {
     try {
-      const { email } = req.body;
+      const body = req.body;
 
-      await this.authService.requestResetPassword(email);
-      return res.send({ statusCode: 200, message: 'mantap' });
+      await this.authService.requestResetPassword(body);
+      return res.send({ statusCode: 200, message: 'Password request has been sent to your email' });
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  private async resetPasswordHandler(req: PasswordResetRequest, res: BaseResponse, next: NextFunction) {
+    try {
+      const body = req.body;
+      const message = await this.authService.resetPassword(body);
+      res.clearCookie(Cookies.ACCESS_TOKEN);
+      res.clearCookie(Cookies.REFRESH_TOKEN);
+      return res.send({ statusCode: 200, message });
     } catch (error) {
       return next(error);
     }

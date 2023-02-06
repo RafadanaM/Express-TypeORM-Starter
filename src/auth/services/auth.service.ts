@@ -6,6 +6,7 @@ import {
   signRefreshToken,
   signRequestPasswordResetToken,
   verifyRefreshToken,
+  verifyRequestPasswordResetToken,
 } from '../../common/utils/token.util';
 import { isQueryFailedError } from '../../common/utils/db.util';
 import { comparePassword, hashPassword } from '../../common/utils/hash.util';
@@ -20,6 +21,9 @@ import LoginServiceResponse from '../responses/loginService.response';
 import RefreshServiceResponse from '../responses/refreshService.response';
 import { sendRequestResetPasswordMail } from '../../common/utils/mail.util';
 import { deleteScan } from '../../common/utils/redis.util';
+import ResetPasswordDTO from '../dto/resetPassword.dto';
+import ResetPasswordRequestDTO from '../dto/resetPasswordRequest.dto';
+import NotFoundException from '../../common/exceptions/notFound.exception';
 
 class AuthService {
   usersRepository: Repository<Users>;
@@ -120,21 +124,59 @@ class AuthService {
     return { accessToken, refreshToken };
   }
 
-  public async requestResetPassword(email: string) {
+  public async requestResetPassword(data: ResetPasswordRequestDTO): Promise<void> {
     const user = await this.usersRepository
       .createQueryBuilder('users')
       .select(['users.email', 'users.id'])
-      .where('users.email = :email', { email })
+      .where('users.email = :email', { email: data.email })
       .getOne();
 
     if (user) {
-      const token = await signRequestPasswordResetToken(user.email);
+      const { token, key } = await signRequestPasswordResetToken({ id: user.id });
       const baseKey = `${user.id}_password_`;
       await deleteScan(baseKey + '*');
-      await redisClient.setEx(`${baseKey}_${token}`, TokenExpiration.PASSWORD_RESET, token);
-      const url = `http://localhost:3000/password-reset?token=${token}`;
+      await redisClient.setEx(`${baseKey}${token}`, TokenExpiration.PASSWORD_RESET, key);
+      const url = `http://localhost:3000/password-reset?token=${token}&id=${user.id}`;
       await sendRequestResetPasswordMail(user.email, url);
     }
+  }
+  public async resetPassword(data: ResetPasswordDTO): Promise<string> {
+    /*
+    Check if token is in whitelist, if not in whitelist reject
+    verify token received, reject if error
+    check if user exist, reject if not
+    hash the new password
+    update the new password on db
+    delete all refresh token of the user on the whitelist
+    delete the user's request password reset token on whitelist
+    */
+    const { id, token, password } = data;
+
+    const key = await redisClient.get(`${id}_password_${token}`);
+    if (key === null)
+      throw new UnauthorizedException('your link has expired, please request a new password reset link');
+
+    const decoded = verifyRequestPasswordResetToken(token, key);
+
+    if (decoded === null)
+      throw new UnauthorizedException('your link is invalid, please request a new password reset link');
+
+    const user = await this.usersRepository.createQueryBuilder('users').select(['users.id']).getOne();
+    if (user === null) throw new NotFoundException('user not found');
+
+    const hashed_password = await hashPassword(password);
+
+    await this.usersRepository
+      .createQueryBuilder('users')
+      .update()
+      .set({ password: hashed_password })
+      .where('users.id = :id', { id: user.id })
+      .execute();
+
+    await deleteScan(`${user.id}_refresh_*`);
+    await redisClient.del(`${user.id}_password_${token}`);
+
+    return 'password has been succesfully changed';
   }
 }
 export default AuthService;

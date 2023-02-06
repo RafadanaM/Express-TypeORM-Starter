@@ -1,9 +1,6 @@
 import BaseRequest from '../../common/requests/base.request';
+import ResetPasswordRequestDTO from '../dto/resetPasswordRequest.dto';
 
-interface RequestPasswordResetBody {
-  email: string;
-}
-
-interface RequestPasswordResetRequest extends BaseRequest<unknown, unknown, RequestPasswordResetBody> {}
+interface RequestPasswordResetRequest extends BaseRequest<unknown, unknown, ResetPasswordRequestDTO> {}
 
 export default RequestPasswordResetRequest;
