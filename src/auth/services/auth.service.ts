@@ -19,11 +19,13 @@ import redisClient from '../../common/config/redis';
 import { TokenExpiration } from '../../common/enums/token.enum';
 import LoginServiceResponse from '../responses/loginService.response';
 import RefreshServiceResponse from '../responses/refreshService.response';
-import { sendRequestResetPasswordMail } from '../../common/utils/mail.util';
+import { sendRequestResetPasswordMail, sendVerificationMail } from '../../common/utils/mail.util';
 import { deleteScan } from '../../common/utils/redis.util';
 import ResetPasswordDTO from '../dto/resetPassword.dto';
 import ResetPasswordRequestDTO from '../dto/resetPasswordRequest.dto';
 import NotFoundException from '../../common/exceptions/notFound.exception';
+import VerifyUserDTO from '../dto/verifyUser.dto';
+import RequestVerifyUserDTO from '../dto/requestVerifyUser.dto';
 
 class AuthService {
   usersRepository: Repository<Users>;
@@ -36,8 +38,11 @@ class AuthService {
     try {
       const hashed_password = await hashPassword(registerData.password);
       const newUser = this.usersRepository.create({ ...registerData, password: hashed_password });
-      await this.usersRepository.save(newUser);
-      return 'User created!';
+      const user = await this.usersRepository.save(newUser);
+
+      await this.createVerificationTokenAndSendByEmail(user.id, user.email);
+
+      return 'account created, please check your email to verify your account';
     } catch (error) {
       if (isQueryFailedError(error)) {
         if (error.code === '23505') {
@@ -56,14 +61,17 @@ class AuthService {
 
     const user = await this.usersRepository
       .createQueryBuilder('users')
-      .select(['users.email', 'users.id', 'users.password', 'users.first_name', 'users.last_name'])
+      .select(['users.email', 'users.id', 'users.password', 'users.first_name', 'users.last_name', 'users.isVerified'])
       .where('users.email = :email', { email: loginData.email })
       .getOne();
 
     if (!user) throw new BadRequestException('Email or Password does not match');
+    if (!user.password) throw new InternalServerErrorException();
 
     const isMatch = await comparePassword(loginData.password, user.password);
     if (!isMatch) throw new BadRequestException('Email or Password does not match');
+
+    if (!user.isVerified) throw new UnauthorizedException('Please verify your account');
 
     const accessToken = signAccessToken({ id: user.id });
     const refreshToken = signRefreshToken({ id: user.id });
@@ -124,10 +132,10 @@ class AuthService {
       .getOne();
 
     if (user) {
-      const { token, key } = await signRequestToken({ id: user.id });
+      const { token, key } = await signRequestToken({ id: user.id }, TokenExpiration.PASSWORD);
 
       await deleteScan(`${user.id}_password-reset_*`);
-      await redisClient.setEx(this.generateRedisKey('password-reset', user.id, token), TokenExpiration.REQUEST, key);
+      await redisClient.setEx(this.generateRedisKey('password-reset', user.id, token), TokenExpiration.PASSWORD, key);
 
       const url = this.generateRequestURL('password-reset', token, user.id);
       await sendRequestResetPasswordMail(user.email, url.toString());
@@ -170,7 +178,7 @@ class AuthService {
     return 'password has been succesfully changed';
   }
 
-  public async requestVerification() {
+  public async requestVerification(data: RequestVerifyUserDTO): Promise<string> {
     /*
     Check if user exists by email, reject if not found
     delete all verification request token for the user
@@ -179,9 +187,24 @@ class AuthService {
     generate url for the user with params of userId and verify token
     send an email to the user with the url
     */
+    const user = await this.usersRepository
+      .createQueryBuilder('users')
+      .select(['users.id', 'users.email', 'users.isVerified'])
+      .where('users.email = :email', { email: data.email })
+      .getOne();
+
+    if (user !== null) {
+      if (user.isVerified) throw new BadRequestException('user is already verified');
+
+      await deleteScan(`${user.id}_verify_*`);
+
+      await this.createVerificationTokenAndSendByEmail(user.id, user.email);
+    }
+
+    return 'verification request has been sent to your email';
   }
 
-  public async verifyUser() {
+  public async verifyUser(data: VerifyUserDTO): Promise<string> {
     /*
     check token in whitelist to get the token and key, reject if not found
     verify token, reject if error
@@ -189,6 +212,40 @@ class AuthService {
     change verification status of the user to verified
     remove the token from the whitelist
     */
+    const userVerificationKey = await redisClient.get(this.generateRedisKey('verify', data.userId, data.token));
+    if (userVerificationKey === null) throw new UnauthorizedException('Invalid token');
+
+    const decoded = verifyRequestToken(data.token, userVerificationKey);
+    if (decoded === null) throw new UnauthorizedException('Token is invalid');
+
+    if (decoded.id !== data.userId) throw new UnauthorizedException('Token is invalid');
+
+    const user = await this.usersRepository
+      .createQueryBuilder('users')
+      .select(['users.id', 'users.isVerified'])
+      .where('users.id = :id', { id: data.userId })
+      .getOne();
+
+    if (user === null) throw new NotFoundException('User not found');
+
+    await this.usersRepository
+      .createQueryBuilder('users')
+      .update()
+      .set({ isVerified: true })
+      .where('users.id = :id', { id: data.userId })
+      .execute();
+
+    await redisClient.del(this.generateRedisKey('verify', data.userId, data.token));
+
+    return 'User has been verified';
+  }
+
+  private async createVerificationTokenAndSendByEmail(userId: string, email: string) {
+    const { token, key } = await signRequestToken({ id: userId }, TokenExpiration.VERIFY);
+    await redisClient.setEx(this.generateRedisKey('verify', userId, token), TokenExpiration.VERIFY, key);
+    const url = this.generateRequestURL('verify', token, userId);
+
+    await sendVerificationMail(email, url.toString());
   }
 
   /**

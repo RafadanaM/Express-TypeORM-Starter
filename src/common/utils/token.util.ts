@@ -81,9 +81,11 @@ export const verifyRefreshToken = (token: string): RefreshToken | null => {
  * @param {RequestTokenPayload} payload payload of the token
  * @returns  JWT token and salt pai
  */
-export const signRequestToken = async (payload: RequestTokenPayload) => {
+export const signRequestToken = async (payload: RequestTokenPayload, expiresIn: number) => {
   const key = await genSalt();
-  const token = jwt.sign(payload, key);
+  const token = jwt.sign(payload, key, {
+    expiresIn: expiresIn,
+  });
   return { token, key };
 };
 

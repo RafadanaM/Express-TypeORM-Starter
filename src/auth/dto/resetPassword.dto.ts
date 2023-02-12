@@ -1,8 +1,8 @@
-import { IsJWT, IsString, IsUUID, Matches, MaxLength, MinLength } from 'class-validator';
+import { IsString, Matches, MaxLength, MinLength } from 'class-validator';
 import { Match } from '../../common/decorators/Match';
 
 class ResetPasswordDTO {
-  @IsUUID()
+  @IsString()
   id!: string;
 
   @IsString()
@@ -17,7 +17,7 @@ class ResetPasswordDTO {
   @Match(ResetPasswordDTO, (x) => x.password, { message: 'Password and Password Confirmation Does Not Match' })
   confirm_password!: string;
 
-  @IsJWT()
+  @IsString()
   token!: string;
 }
 export default ResetPasswordDTO;

@@ -9,7 +9,7 @@ const httpLogger = pinoHttp({
   serializers: {},
 
   customReceivedMessage(req, _) {
-    return `REQUEST: (ID:${req.id}) ${req.method} ${req.url} ${req.socket.remoteAddress}`;
+    return `REQUEST: (ID:${req.id}) ${req.method} ${req.url} ${req.headers['X-Forwarded-For']}`;
   },
 
   customSuccessMessage(req, res) {

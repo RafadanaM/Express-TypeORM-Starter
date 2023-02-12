@@ -16,6 +16,10 @@ import RequestPasswordResetRequest from '../requests/resetPasswordRequest.reques
 import ResetPasswordRequestDTO from '../dto/resetPasswordRequest.dto';
 import PasswordResetRequest from '../requests/resetPassword.request';
 import ResetPasswordDTO from '../dto/resetPassword.dto';
+import VerifyUserRequest from '../requests/verifyUser.request';
+import VerifyUserDTO from '../dto/verifyUser.dto';
+import RequestVerifyUserDTO from '../dto/requestVerifyUser.dto';
+import RequestVerifyUserRequest from '../requests/requestVerifyUser.request';
 
 class AuthController implements BaseController {
   public path: string;
@@ -29,6 +33,16 @@ class AuthController implements BaseController {
     this.initRoutes();
   }
   private initRoutes() {
+    this.router.post(
+      '/verify',
+      validationMiddleware(VerifyUserDTO, RequestTypes.BODY),
+      this.verifyUserHandler.bind(this),
+    );
+    this.router.post(
+      '/verify/request',
+      validationMiddleware(RequestVerifyUserDTO, RequestTypes.BODY),
+      this.requestVerifyUserHandler.bind(this),
+    );
     this.router.get('/refresh', this.refreshHandler.bind(this));
     this.router.post(
       '/reset-password/request',
@@ -120,6 +134,27 @@ class AuthController implements BaseController {
       const message = await this.authService.resetPassword(body);
       res.clearCookie(Cookies.ACCESS_TOKEN);
       res.clearCookie(Cookies.REFRESH_TOKEN);
+      return res.send({ statusCode: 200, message });
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  private async verifyUserHandler(req: VerifyUserRequest, res: BaseResponse, next: NextFunction) {
+    try {
+      const body = req.body;
+
+      const message = await this.authService.verifyUser(body);
+      return res.send({ statusCode: 200, message });
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  private async requestVerifyUserHandler(req: RequestVerifyUserRequest, res: BaseResponse, next: NextFunction) {
+    try {
+      const body = req.body;
+      const message = await this.authService.requestVerification(body);
       return res.send({ statusCode: 200, message });
     } catch (error) {
       return next(error);

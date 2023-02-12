@@ -16,13 +16,16 @@ class Users {
   public email!: string;
 
   @Column({ select: false })
-  public password!: string;
+  public password?: string;
 
   @Column()
   public birth_date!: Date;
 
-  @Column({ nullable: true, default: null })
-  public avatar!: string;
+  @Column({ type: 'varchar', nullable: true, default: null })
+  public avatar!: string | null;
+
+  @Column({ default: false })
+  public isVerified!: boolean;
 
   @CreateDateColumn()
   public created!: Date;
