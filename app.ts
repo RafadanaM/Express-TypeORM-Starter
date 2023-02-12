@@ -1,5 +1,4 @@
 import express from 'express';
-import compression from 'compression';
 import cors from 'cors';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
@@ -18,6 +17,7 @@ class App {
 
   constructor(controllers: BaseController[], port: number) {
     this.app = express();
+    this.initAppConfig();
     this.port = port;
     this.initRedis();
     this.initMiddlewares();
@@ -28,12 +28,20 @@ class App {
     this.initUncaughtException();
   }
 
+  private initAppConfig() {
+    /* 
+    Uncomment below if running under proxy like nginx, apache, etc
+    so that req.ip returns the client's IP instead of the proxy's IP.
+    (you can also use req.headers["x-forwarded-for"] but)
+    */
+    // this.app.set("trust proxy", "127.0.0.1")
+    this.app.disable('x-powered-by');
+  }
+
   private initMiddlewares() {
     this.app.use(helmet());
     this.app.use(cookieParser());
     this.app.use(cors({ origin: process.env.ORIGIN, credentials: true }));
-    // using nginx for compression is better, https://github.com/goldbergyoni/nodebestpractices/blob/master/sections/production/delegatetoproxy.md
-    this.app.use(compression());
     this.app.use(express.json());
     this.app.use(express.urlencoded({ extended: true }));
     this.app.use(httpLogger);
@@ -73,7 +81,7 @@ class App {
 
   public listen() {
     this.app.listen(this.port, () => {
-      console.log(`🚀 Server ready at port: ${this.port}`);
+      logger.info(`🚀 Server ready at port: ${this.port}`);
     });
   }
 }
