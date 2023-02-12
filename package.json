@@ -1,7 +1,7 @@
 {
-  "name": "express",
+  "name": "express_starter",
   "version": "1.0.0",
-  "description": "",
+  "description": "ExpressJs Starter with TypeORM and Postgres",
   "main": "build/bin/www/server.js",
   "scripts": {
     "dev": "cross-env NODE_ENV=development ts-node-dev ./bin/www/server.ts",
@@ -14,13 +14,12 @@
     "migration:revert": "npm run typeorm migration:revert"
   },
   "keywords": [],
-  "author": "",
+  "author": "Muhammad Rafaadana Mountheira",
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^5.0.1",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.13.2",
-    "compression": "^1.7.4",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "cross-env": "^7.0.3",
@@ -30,7 +29,6 @@
     "handlebars": "^4.7.7",
     "helmet": "^5.1.0",
     "jsonwebtoken": "^8.5.1",
-    "morgan": "^1.10.0",
     "multer": "^1.4.5-lts.1",
     "nanoid": "^3.0.0",
     "nodemailer": "^6.9.1",
