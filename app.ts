@@ -2,12 +2,10 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
-import swaggerUi from 'swagger-ui-express';
 import errorMiddleware from './src/common/middlewares/error.middleware';
 import NotFoundMiddleware from './src/common/middlewares/notfound.middleware';
 import httpLogger from './src/common/logger/httpLogger';
 import logger from './src/common/logger/logger';
-import options from './docs/swaggerOption';
 import BaseController from './src/common/controllers/base.controller';
 import redisClient from './src/common/config/redis';
 class App {
@@ -45,7 +43,6 @@ class App {
     this.app.use(express.json());
     this.app.use(express.urlencoded({ extended: true }));
     this.app.use(httpLogger);
-    this.app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(options, { explorer: true }));
   }
 
   private initControllers(controllers: BaseController[]) {
