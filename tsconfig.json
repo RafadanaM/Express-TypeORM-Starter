@@ -24,8 +24,8 @@
 		"emitDecoratorMetadata": true,
 		"experimentalDecorators": true,
 	
-		"baseUrl": "."
+		"baseUrl": "./"
 	},
-	"exclude": ["node_modules"],
+	"exclude": ["node_modules", "build"],
 	"include": ["./src/**/*.tsx", "./src/**/*.ts", "app.ts", "./bin/www/**/*.ts"]
 }

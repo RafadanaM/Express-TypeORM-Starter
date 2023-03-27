@@ -1,13 +1,13 @@
-import express from 'express';
-import cors from 'cors';
-import helmet from 'helmet';
-import cookieParser from 'cookie-parser';
-import errorMiddleware from './src/common/middlewares/error.middleware';
-import NotFoundMiddleware from './src/common/middlewares/notfound.middleware';
-import httpLogger from './src/common/logger/httpLogger';
-import logger from './src/common/logger/logger';
-import BaseController from './src/common/controllers/base.controller';
-import redisClient from './src/common/config/redis';
+import express from "express";
+import cors from "cors";
+import helmet from "helmet";
+import cookieParser from "cookie-parser";
+import errorMiddleware from "./src/common/middlewares/error.middleware";
+import NotFoundMiddleware from "./src/common/middlewares/notfound.middleware";
+import httpLogger from "./src/common/logger/httpLogger";
+import logger from "./src/common/logger/logger";
+import BaseController from "./src/common/controllers/base.controller";
+import redisClient from "./src/common/config/redis";
 class App {
   public app: express.Application;
 
@@ -33,7 +33,7 @@ class App {
     (you can also use req.headers["x-forwarded-for"] but)
     */
     // this.app.set("trust proxy", "127.0.0.1")
-    this.app.disable('x-powered-by');
+    this.app.disable("x-powered-by");
   }
 
   private initMiddlewares() {
@@ -64,13 +64,13 @@ class App {
   }
 
   private initUnhandledRejection() {
-    process.on('unhandledRejection', (error: Error) => {
+    process.on("unhandledRejection", (error: Error) => {
       throw error;
     });
   }
 
   private initUncaughtException() {
-    process.on('uncaughtException', (error: Error) => {
+    process.on("uncaughtException", (error: Error) => {
       logger.error(error);
       process.exit(1);
     });

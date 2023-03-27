@@ -1,63 +1,66 @@
-import { NextFunction, Router } from 'express';
-import { RequestTypes } from '../../common/enums/request.enum';
-import { Cookies } from '../../common/enums/token.enum';
-import validationMiddleware from '../../common/middlewares/validation.middleware';
-import { accessCookieOption, refreshCookieOption } from '../../common/utils/token.util';
-import AuthService from '../services/auth.service';
-import BaseController from '../../common/controllers/base.controller';
-import LoginDTO from '../dto/login.dto';
-import RegisterDTO from '../dto/register.dto';
-import RegisterRequest from '../requests/register.request';
-import { BaseResponse } from '../../common/responses/base.response';
-import { LoginResponse } from '../responses/login.response';
-import LoginRequest from '../requests/login.request';
-import BaseRequest from '../../common/requests/base.request';
-import RequestPasswordResetRequest from '../requests/resetPasswordRequest.request';
-import ResetPasswordRequestDTO from '../dto/resetPasswordRequest.dto';
-import PasswordResetRequest from '../requests/resetPassword.request';
-import ResetPasswordDTO from '../dto/resetPassword.dto';
-import VerifyUserRequest from '../requests/verifyUser.request';
-import VerifyUserDTO from '../dto/verifyUser.dto';
-import RequestVerifyUserDTO from '../dto/requestVerifyUser.dto';
-import RequestVerifyUserRequest from '../requests/requestVerifyUser.request';
+import { NextFunction, Router } from "express";
+import { RequestTypes } from "../../common/enums/request.enum";
+import { Cookies } from "../../common/enums/token.enum";
+import validationMiddleware from "../../common/middlewares/validation.middleware";
+import { accessCookieOption, refreshCookieOption } from "../../common/utils/token.util";
+import AuthService from "../services/auth.service";
+import BaseController from "../../common/controllers/base.controller";
+import LoginDTO from "../dto/login.dto";
+import RegisterDTO from "../dto/register.dto";
+import RegisterRequest from "../requests/register.request";
+import { BaseResponse } from "../../common/responses/base.response";
+import { LoginResponse } from "../responses/login.response";
+import LoginRequest from "../requests/login.request";
+import BaseRequest from "../../common/requests/base.request";
+import RequestPasswordResetRequest from "../requests/resetPasswordRequest.request";
+import ResetPasswordRequestDTO from "../dto/resetPasswordRequest.dto";
+import PasswordResetRequest from "../requests/resetPassword.request";
+import ResetPasswordDTO from "../dto/resetPassword.dto";
+import VerifyUserRequest from "../requests/verifyUser.request";
+import VerifyUserDTO from "../dto/verifyUser.dto";
+import RequestVerifyUserDTO from "../dto/requestVerifyUser.dto";
+import RequestVerifyUserRequest from "../requests/requestVerifyUser.request";
 
 class AuthController implements BaseController {
   public path: string;
+
   public router: Router;
+
   private authService: AuthService;
 
   constructor() {
-    this.path = '/auth';
+    this.path = "/auth";
     this.router = Router();
     this.authService = new AuthService();
     this.initRoutes();
   }
+
   private initRoutes() {
     this.router.post(
-      '/verify',
+      "/verify",
       validationMiddleware(VerifyUserDTO, RequestTypes.BODY),
       this.verifyUserHandler.bind(this),
     );
     this.router.post(
-      '/verify/request',
+      "/verify/request",
       validationMiddleware(RequestVerifyUserDTO, RequestTypes.BODY),
       this.requestVerifyUserHandler.bind(this),
     );
-    this.router.get('/refresh', this.refreshHandler.bind(this));
+    this.router.get("/refresh", this.refreshHandler.bind(this));
     this.router.post(
-      '/reset-password/request',
+      "/reset-password/request",
       validationMiddleware(ResetPasswordRequestDTO, RequestTypes.BODY),
       this.requestResetPasswordHandler.bind(this),
     );
     this.router.patch(
-      '/reset-password',
+      "/reset-password",
       validationMiddleware(ResetPasswordDTO, RequestTypes.BODY),
       this.resetPasswordHandler.bind(this),
     );
-    this.router.get('/logout', this.logoutHandler.bind(this));
-    this.router.post('/login', validationMiddleware(LoginDTO, RequestTypes.BODY), this.loginHandler.bind(this));
+    this.router.get("/logout", this.logoutHandler.bind(this));
+    this.router.post("/login", validationMiddleware(LoginDTO, RequestTypes.BODY), this.loginHandler.bind(this));
     this.router.post(
-      '/register',
+      "/register",
       validationMiddleware(RegisterDTO, RequestTypes.BODY),
       this.registerHandler.bind(this),
     );
@@ -81,7 +84,7 @@ class AuthController implements BaseController {
       const { accessToken, refreshToken, userResponse } = await this.authService.login(body, mRefreshToken);
       res.cookie(Cookies.ACCESS_TOKEN, accessToken, accessCookieOption);
       res.cookie(Cookies.REFRESH_TOKEN, refreshToken, refreshCookieOption);
-      return res.send({ statusCode: 200, message: 'successfully logged in', user: userResponse });
+      return res.send({ statusCode: 200, message: "successfully logged in", user: userResponse });
     } catch (error) {
       return next(error);
     }
@@ -95,7 +98,7 @@ class AuthController implements BaseController {
       }
       res.clearCookie(Cookies.ACCESS_TOKEN);
       res.clearCookie(Cookies.REFRESH_TOKEN);
-      return res.send({ statusCode: 200, message: 'successfully logged out' });
+      return res.send({ statusCode: 200, message: "successfully logged out" });
     } catch (error) {
       return next(error);
     }
@@ -109,7 +112,7 @@ class AuthController implements BaseController {
       res.cookie(Cookies.ACCESS_TOKEN, accessToken, accessCookieOption);
       res.cookie(Cookies.REFRESH_TOKEN, refreshToken, refreshCookieOption);
 
-      return res.send({ statusCode: 200, message: 'token refreshed' });
+      return res.send({ statusCode: 200, message: "token refreshed" });
     } catch (error) {
       res.clearCookie(Cookies.ACCESS_TOKEN);
       res.clearCookie(Cookies.REFRESH_TOKEN);
@@ -122,7 +125,7 @@ class AuthController implements BaseController {
       const body = req.body;
 
       await this.authService.requestResetPassword(body);
-      return res.send({ statusCode: 200, message: 'Password request has been sent to your email' });
+      return res.send({ statusCode: 200, message: "Password request has been sent to your email" });
     } catch (error) {
       return next(error);
     }
@@ -143,7 +146,6 @@ class AuthController implements BaseController {
   private async verifyUserHandler(req: VerifyUserRequest, res: BaseResponse, next: NextFunction) {
     try {
       const body = req.body;
-
       const message = await this.authService.verifyUser(body);
       return res.send({ statusCode: 200, message });
     } catch (error) {
