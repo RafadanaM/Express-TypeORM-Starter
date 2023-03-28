@@ -1,10 +1,19 @@
-import { BaseResponse, BaseResponseBody } from '../../common/responses/base.response';
-import Users from '../../users/entities/users.entity';
+import { BaseResponse, BaseResponseBody } from "../../common/responses/base.response";
+import Users from "../../users/entities/users.entity";
+
+type LoginUser = Pick<Users, "email" | "first_name" | "last_name">;
+
+interface LoginServiceResponse {
+  refreshToken: string;
+  accessToken: string;
+
+  userResponse: LoginUser;
+}
 
 interface LoginResponseBody extends BaseResponseBody {
-  user: Partial<Users>;
+  user: LoginUser;
 }
 
 interface LoginResponse extends BaseResponse<LoginResponseBody> {}
 
-export { LoginResponse, LoginResponseBody };
+export { LoginResponse, LoginResponseBody, LoginServiceResponse };

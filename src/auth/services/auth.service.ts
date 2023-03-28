@@ -17,8 +17,6 @@ import InternalServerErrorException from "../../common/exceptions/internalServer
 import UnauthorizedException from "../../common/exceptions/unauthorized.exception";
 import redisClient from "../../common/config/redis";
 import { TokenExpiration } from "../../common/enums/token.enum";
-import LoginServiceResponse from "../responses/loginService.response";
-import RefreshServiceResponse from "../responses/refreshService.response";
 import { sendRequestResetPasswordMail, sendVerificationMail } from "../../common/utils/mail.util";
 import { deleteScan } from "../../common/utils/redis.util";
 import ResetPasswordDTO from "../dto/resetPassword.dto";
@@ -26,6 +24,8 @@ import ResetPasswordRequestDTO from "../dto/resetPasswordRequest.dto";
 import NotFoundException from "../../common/exceptions/notFound.exception";
 import VerifyUserDTO from "../dto/verifyUser.dto";
 import RequestVerifyUserDTO from "../dto/requestVerifyUser.dto";
+import { LoginServiceResponse } from "../responses/login.response";
+import TokenResponse from "../responses/token.response";
 
 class AuthService {
   usersRepository: Repository<Users>;
@@ -94,7 +94,7 @@ class AuthService {
     return;
   }
 
-  public async refresh(token: string | undefined): Promise<RefreshServiceResponse> {
+  public async refresh(token: string | undefined): Promise<TokenResponse> {
     /*
     Use Redis Whitelist (Honestly if not sure if I should use blacklist or whitelist)
     1. verify current refresh token, reject if invalid, otherwise continue
