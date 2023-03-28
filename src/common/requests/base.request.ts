@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Request } from 'express';
-import { ParamsDictionary } from 'express-serve-static-core';
-
+import { Request } from "express";
+interface ParamsDictionary {
+  [key: string]: string;
+}
 interface BaseRequest<
   P = ParamsDictionary,
   ResBody = any,

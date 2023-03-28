@@ -1,7 +1,7 @@
 import "dotenv/config";
 import "reflect-metadata";
 import App from "../../app";
-import AppDataSource from "../../src/db/data-source";
+import AppDataSource from "../../db/data-source";
 import AuthController from "../../src/auth/controllers/auth.controller";
 import UsersController from "../../src/users/controllers/users.controller";
 import validateEnv from "../../src/common/utils/validateEnv";

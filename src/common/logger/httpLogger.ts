@@ -1,6 +1,5 @@
-import pinoHttp from 'pino-http';
-import logger from './logger';
-
+import pinoHttp from "pino-http";
+import logger from "./logger";
 const httpLogger = pinoHttp({
   logger: logger,
   autoLogging: true,
@@ -9,7 +8,7 @@ const httpLogger = pinoHttp({
   serializers: {},
 
   customReceivedMessage(req, _) {
-    return `REQUEST: (ID:${req.id}) ${req.method} ${req.url} ${req.headers['X-Forwarded-For']}`;
+    return `REQUEST: (ID:${req.id}) ${req.method} ${req.url} ${req.headers["X-Forwarded-For"]}`;
   },
 
   customSuccessMessage(req, res) {

@@ -1,33 +1,34 @@
-import { Router, NextFunction } from 'express';
-import authMiddleware from '../../common/middlewares/auth.middleware';
-import UsersService from '../services/users.service';
-import BaseController from '../../common/controllers/base.controller';
-import BaseRequest from '../../common/requests/base.request';
-import { UsersResponse } from '../responses/users.response';
-import UserResponse from '../responses/user.response';
+import { Router, NextFunction } from "express";
+import authMiddleware from "../../common/middlewares/auth.middleware";
+import UsersService from "../services/users.service";
+import BaseController from "../../common/controllers/base.controller";
+import BaseRequest from "../../common/requests/base.request";
+import { UsersResponse } from "../responses/users.response";
+import UserResponse from "../responses/user.response";
 
 class UsersController implements BaseController {
   public path: string;
+
   public router: Router;
 
   private usersService: UsersService;
 
   constructor() {
-    this.path = '/users';
+    this.path = "/users";
     this.router = Router();
     this.usersService = new UsersService();
     this.initRoutes();
   }
 
   private initRoutes() {
-    this.router.get('', authMiddleware, this.getUsersHandler.bind(this));
-    this.router.get('/profile', authMiddleware, this.getUserHandler.bind(this));
+    this.router.get("", authMiddleware, this.getUsersHandler.bind(this));
+    this.router.get("/profile", authMiddleware, this.getUserHandler.bind(this));
   }
 
   private async getUsersHandler(_req: BaseRequest, res: UsersResponse, next: NextFunction) {
     try {
       const users = await this.usersService.getUsers();
-      return res.send({ statusCode: 200, message: 'users successfully retrieved', users });
+      return res.send({ statusCode: 200, message: "users successfully retrieved", users });
     } catch (error) {
       return next(error);
     }
@@ -37,7 +38,7 @@ class UsersController implements BaseController {
     try {
       const userId = res.locals.userId;
       const user = await this.usersService.getUserById(userId);
-      return res.send({ statusCode: 200, message: 'user successfully retrieved', user });
+      return res.send({ statusCode: 200, message: "user successfully retrieved", user });
     } catch (error) {
       return next(error);
     }

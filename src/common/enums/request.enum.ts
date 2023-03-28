@@ -1,5 +1,5 @@
 export enum RequestTypes {
-  BODY = 'body',
-  PARAMS = 'params',
-  QUERY = 'query',
+  BODY = "body",
+  PARAMS = "params",
+  QUERY = "query",
 }

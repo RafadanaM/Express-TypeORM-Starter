@@ -1,4 +1,4 @@
-import bcrypt from 'bcrypt';
+import bcrypt from "bcrypt";
 
 /**
  * Generate hashed password
@@ -6,7 +6,7 @@ import bcrypt from 'bcrypt';
  * @returns {string} hashed password
  */
 export const hashPassword = async (passwordToHash: string): Promise<string> => {
-  return await bcrypt.hash(passwordToHash, 11);
+  return bcrypt.hash(passwordToHash, 11);
 };
 
 /**
@@ -16,7 +16,7 @@ export const hashPassword = async (passwordToHash: string): Promise<string> => {
  * @returns {boolean} whether plain password matches hashed password
  */
 export const comparePassword = async (hashedPassword: string, plainPassword: string): Promise<boolean> => {
-  return await bcrypt.compare(hashedPassword, plainPassword);
+  return bcrypt.compare(hashedPassword, plainPassword);
 };
 
 /**
@@ -24,5 +24,5 @@ export const comparePassword = async (hashedPassword: string, plainPassword: str
  * @returns {string} salt
  */
 export const genSalt = async (): Promise<string> => {
-  return await bcrypt.genSalt();
+  return bcrypt.genSalt();
 };
