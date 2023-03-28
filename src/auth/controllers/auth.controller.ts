@@ -20,6 +20,7 @@ import VerifyUserRequest from "../requests/verifyUser.request";
 import VerifyUserDTO from "../dto/verifyUser.dto";
 import RequestVerifyUserDTO from "../dto/requestVerifyUser.dto";
 import RequestVerifyUserRequest from "../requests/requestVerifyUser.request";
+import { IsAuthenticatedResponse } from "../responses/isAuthenticated.response";
 
 class AuthController implements BaseController {
   public path: string;
@@ -47,6 +48,7 @@ class AuthController implements BaseController {
       this.requestVerifyUserHandler.bind(this),
     );
     this.router.get("/refresh", this.refreshHandler.bind(this));
+    this.router.get("/me", this.isAuthenticatedHandler.bind(this));
     this.router.post(
       "/reset-password/request",
       validationMiddleware(ResetPasswordRequestDTO, RequestTypes.BODY),
@@ -64,6 +66,14 @@ class AuthController implements BaseController {
       validationMiddleware(RegisterDTO, RequestTypes.BODY),
       this.registerHandler.bind(this),
     );
+  }
+
+  private async isAuthenticatedHandler(_req: BaseRequest, res: IsAuthenticatedResponse, next: NextFunction) {
+    try {
+      return res.send({ statusCode: 200, message: "user is authenticated", isAuthenticated: true });
+    } catch (error) {
+      return next(error);
+    }
   }
 
   private async registerHandler(req: RegisterRequest, res: BaseResponse, next: NextFunction) {
