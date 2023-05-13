@@ -1,4 +1,5 @@
-import express from "express";
+import express, { Application } from "express";
+import { Server } from "http";
 import cors from "cors";
 import helmet from "helmet";
 import cookieParser from "cookie-parser";
@@ -8,8 +9,9 @@ import httpLogger from "./src/common/logger/httpLogger";
 import logger from "./src/common/logger/logger";
 import BaseController from "./src/common/controllers/base.controller";
 import redisClient from "./src/common/config/redis";
+
 class App {
-  public app: express.Application;
+  public app: Application;
 
   public port: number;
 
@@ -17,13 +19,10 @@ class App {
     this.app = express();
     this.initAppConfig();
     this.port = port;
-    this.initRedis();
     this.initMiddlewares();
     this.initControllers(controllers);
     this.initErrorHandling();
     this.initRouteNotFound();
-    this.initUnhandledRejection();
-    this.initUncaughtException();
   }
 
   private initAppConfig() {
@@ -59,27 +58,11 @@ class App {
     this.app.use(NotFoundMiddleware);
   }
 
-  private async initRedis() {
-    await redisClient.connect();
-  }
-
-  private initUnhandledRejection() {
-    process.on("unhandledRejection", (error: Error) => {
-      throw error;
-    });
-  }
-
-  private initUncaughtException() {
-    process.on("uncaughtException", (error: Error) => {
-      logger.error(error);
-      process.exit(1);
-    });
-  }
-
-  public listen() {
-    this.app.listen(this.port, () => {
+  public listen(): Server {
+    const server = this.app.listen(this.port, () => {
       logger.info(`Server ready at port: ${this.port}`);
     });
+    return server;
   }
 }
 
