@@ -1,26 +1,25 @@
 import { NextFunction, Router } from "express";
-import { RequestTypes } from "../../common/enums/request.enum";
 import { Cookies } from "../../common/enums/token.enum";
-import validationMiddleware from "../../common/middlewares/validation.middleware";
 import { accessCookieOption, refreshCookieOption } from "../../common/utils/token.util";
 import AuthService from "../services/auth.service";
 import BaseController from "../../common/controllers/base.controller";
-import LoginDTO from "../dto/login.dto";
-import RegisterDTO from "../dto/register.dto";
 import RegisterRequest from "../requests/register.request";
 import { BaseResponse } from "../../common/responses/base.response";
 import { LoginResponse } from "../responses/login.response";
 import LoginRequest from "../requests/login.request";
 import BaseRequest from "../../common/requests/base.request";
 import RequestPasswordResetRequest from "../requests/resetPasswordRequest.request";
-import ResetPasswordRequestDTO from "../dto/resetPasswordRequest.dto";
-import PasswordResetRequest from "../requests/resetPassword.request";
-import ResetPasswordDTO from "../dto/resetPassword.dto";
-import VerifyUserRequest from "../requests/verifyUser.request";
-import VerifyUserDTO from "../dto/verifyUser.dto";
-import RequestVerifyUserDTO from "../dto/requestVerifyUser.dto";
 import RequestVerifyUserRequest from "../requests/requestVerifyUser.request";
 import { IsAuthenticatedResponse } from "../responses/isAuthenticated.response";
+import { LoginSchema } from "../schemas/login.schema";
+import validateRequest from "../../common/middlewares/validateRequest.middleware";
+import { RegisterSchema } from "../schemas/register.schema";
+import { VerifyUserSchema } from "../schemas/verifyUser.schema";
+import { RequestVerifyUserSchema } from "../schemas/requestVerifyUser.schema";
+import { ResetPasswordRequestSchema } from "../schemas/resetPasswordRequest.schema";
+import { ResetPasswordSchema } from "../schemas/resetPassword.schema";
+import PasswordResetRequest from "../requests/resetPassword.request";
+import VerifyUserRequest from "../requests/verifyUser.request";
 
 class AuthController implements BaseController {
   public path: string;
@@ -37,35 +36,27 @@ class AuthController implements BaseController {
   }
 
   private initRoutes() {
-    this.router.post(
-      "/verify",
-      validationMiddleware(VerifyUserDTO, RequestTypes.BODY),
-      this.verifyUserHandler.bind(this),
-    );
+    this.router.post("/verify", validateRequest({ body: VerifyUserSchema }), this.verifyUserHandler.bind(this));
     this.router.post(
       "/verify/request",
-      validationMiddleware(RequestVerifyUserDTO, RequestTypes.BODY),
+      validateRequest({ body: RequestVerifyUserSchema }),
       this.requestVerifyUserHandler.bind(this),
     );
     this.router.get("/refresh", this.refreshHandler.bind(this));
     this.router.get("/me", this.isAuthenticatedHandler.bind(this));
     this.router.post(
       "/reset-password/request",
-      validationMiddleware(ResetPasswordRequestDTO, RequestTypes.BODY),
+      validateRequest({ body: ResetPasswordRequestSchema }),
       this.requestResetPasswordHandler.bind(this),
     );
     this.router.patch(
       "/reset-password",
-      validationMiddleware(ResetPasswordDTO, RequestTypes.BODY),
+      validateRequest({ body: ResetPasswordSchema }),
       this.resetPasswordHandler.bind(this),
     );
     this.router.get("/logout", this.logoutHandler.bind(this));
-    this.router.post("/login", validationMiddleware(LoginDTO, RequestTypes.BODY), this.loginHandler.bind(this));
-    this.router.post(
-      "/register",
-      validationMiddleware(RegisterDTO, RequestTypes.BODY),
-      this.registerHandler.bind(this),
-    );
+    this.router.post("/login", validateRequest({ body: LoginSchema }), this.loginHandler.bind(this));
+    this.router.post("/register", validateRequest({ body: RegisterSchema }), this.registerHandler.bind(this));
   }
 
   private async isAuthenticatedHandler(_req: BaseRequest, res: IsAuthenticatedResponse, next: NextFunction) {

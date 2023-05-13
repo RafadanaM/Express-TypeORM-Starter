@@ -10,8 +10,6 @@ validateEnv();
 
 AppDataSource.initialize()
   .then(() => {
-    console.log("run");
-
     // here you can start to work with your database
     const app = new App([new AuthController(), new UsersController()], parseInt(process.env.PORT || "5000"));
     app.listen();

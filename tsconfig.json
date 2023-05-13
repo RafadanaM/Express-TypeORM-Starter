@@ -27,5 +27,8 @@
 		"baseUrl": "./"
 	},
 	"exclude": ["node_modules", "build"],
-	"include": ["./src/**/*.ts", "app.ts", "./bin/www/**/*.ts", "./db/*.ts"]
+	"include": ["./src/**/*.ts", "app.ts", "./bin/www/**/*.ts", "./db/*.ts"],
+	"ts-node": {
+		"swc": true
+	}
 }

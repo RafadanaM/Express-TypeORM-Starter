@@ -78,7 +78,7 @@ class App {
 
   public listen() {
     this.app.listen(this.port, () => {
-      logger.info(`🚀 Server ready at port: ${this.port}`);
+      logger.info(`Server ready at port: ${this.port}`);
     });
   }
 }

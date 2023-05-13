@@ -1,5 +1,5 @@
-import RegisterDTO from '../dto/register.dto';
-import BaseRequest from '../../common/requests/base.request';
+import BaseRequest from "../../common/requests/base.request";
+import { RegisterDTO } from "../schemas/register.schema";
 
 interface RegisterRequest extends BaseRequest<unknown, unknown, RegisterDTO> {}
 

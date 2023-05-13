@@ -1,6 +1,6 @@
 {
     "watch": ["src", "bin"],
     "ext": ".ts,.js",
-    "ignore": ["node_modules"],
+    "ignore": ["node_modules", "build"],
     "exec": "npx ts-node ./bin/www/server.ts"
   }

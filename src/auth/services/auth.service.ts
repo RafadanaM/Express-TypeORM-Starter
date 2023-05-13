@@ -10,8 +10,6 @@ import {
 } from "../../common/utils/token.util";
 import { isQueryFailedError } from "../../common/utils/db.util";
 import { comparePassword, hashPassword } from "../../common/utils/hash.util";
-import RegisterDTO from "../dto/register.dto";
-import LoginDTO from "../dto/login.dto";
 import BadRequestException from "../../common/exceptions/badRequest.exception";
 import InternalServerErrorException from "../../common/exceptions/internalServerError.exception";
 import UnauthorizedException from "../../common/exceptions/unauthorized.exception";
@@ -19,13 +17,15 @@ import redisClient from "../../common/config/redis";
 import { TokenExpiration } from "../../common/enums/token.enum";
 import { sendRequestResetPasswordMail, sendVerificationMail } from "../../common/utils/mail.util";
 import { deleteScan } from "../../common/utils/redis.util";
-import ResetPasswordDTO from "../dto/resetPassword.dto";
-import ResetPasswordRequestDTO from "../dto/resetPasswordRequest.dto";
 import NotFoundException from "../../common/exceptions/notFound.exception";
-import VerifyUserDTO from "../dto/verifyUser.dto";
-import RequestVerifyUserDTO from "../dto/requestVerifyUser.dto";
 import { LoginServiceResponse } from "../responses/login.response";
 import TokenResponse from "../responses/token.response";
+import { LoginDTO } from "../schemas/login.schema";
+import { RegisterDTO } from "../schemas/register.schema";
+import { RequestVerifyUserDTO } from "../schemas/requestVerifyUser.schema";
+import { ResetPasswordDTO } from "../schemas/resetPassword.schema";
+import { ResetPasswordRequestDTO } from "../schemas/resetPasswordRequest.schema";
+import { VerifyUserDTO } from "../schemas/verifyUser.schema";
 
 class AuthService {
   usersRepository: Repository<Users>;

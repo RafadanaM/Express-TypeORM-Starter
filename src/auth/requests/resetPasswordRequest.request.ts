@@ -1,5 +1,5 @@
-import BaseRequest from '../../common/requests/base.request';
-import ResetPasswordRequestDTO from '../dto/resetPasswordRequest.dto';
+import BaseRequest from "../../common/requests/base.request";
+import { ResetPasswordRequestDTO } from "../schemas/resetPasswordRequest.schema";
 
 interface RequestPasswordResetRequest extends BaseRequest<unknown, unknown, ResetPasswordRequestDTO> {}
 
